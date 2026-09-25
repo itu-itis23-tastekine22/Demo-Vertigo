@@ -8,6 +8,7 @@ public class GameController : MonoBehaviour
     [Header("Views")]
     [SerializeField] private WheelView wheelView;
     [SerializeField] private RewardsPanelView rewardsPanelView;
+    [SerializeField] private ZoneBarView zoneBarView; // EKLENDİ
 
     private GameSession _session;
     private SpinResolver _resolver;
@@ -21,18 +22,19 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
-        // Event abonelikleri
         wheelView.SpinClicked += HandleSpinClicked;
         rewardsPanelView.LeaveClicked += HandleLeaveClicked;
         _session.ZoneChanged += RefreshView;
+        _session.Inventory.Changed += HandleInventoryChanged;
 
-        // İlk zone görselini ekrana getir
+        // EKLENDİ: Zone şeridini ilk çizimden önce hazırla
+        zoneBarView.Initialize(_session.GetZoneType);
+
         RefreshView();
     }
 
     private void OnDestroy()
     {
-        // Bellek sızıntılarını önlemek için abonelikleri çözüyoruz
         if (wheelView != null)
         {
             wheelView.SpinClicked -= HandleSpinClicked;
@@ -46,16 +48,24 @@ public class GameController : MonoBehaviour
         if (_session != null)
         {
             _session.ZoneChanged -= RefreshView;
+            _session.Inventory.Changed -= HandleInventoryChanged;
         }
+    }
+
+    private void HandleInventoryChanged()
+    {
+        rewardsPanelView.Refresh(_session.Inventory.Items);
     }
 
     private void RefreshView()
     {
         wheelView.ApplyConfig(_session.CurrentWheel);
 
-        // Spin butonu her zaman açık, Leave butonu yalnızca güvenli/süper zone'da aktif
         wheelView.SetSpinInteractable(true);
         rewardsPanelView.SetLeaveInteractable(_session.CanLeave);
+
+        // EKLENDİ: Mevcut zone'u şeritte güncelle ve kaydır
+        zoneBarView.SetCurrentZone(_session.CurrentZone);
     }
 
     private void HandleSpinClicked()
@@ -64,7 +74,6 @@ public class GameController : MonoBehaviour
 
         int targetIndex = _resolver.ResolveSliceIndex(_session.CurrentWheel);
 
-        // Çark dönerken oyuncunun tekrar basması veya güvenli zone'da kaçması engellenir
         wheelView.SetSpinInteractable(false);
         rewardsPanelView.SetLeaveInteractable(false);
 
@@ -83,7 +92,6 @@ public class GameController : MonoBehaviour
         else
         {
             Debug.Log($"<color=green>[SONUÇ]</color> Ödül kazanıldı! Yeni Zone: {_session.CurrentZone} | Farklı Ödül Sayısı: {_session.Inventory.Items.Count}");
-            // Session içindeki ZoneChanged tetiklendiği için RefreshView otomatik çağrılır
         }
     }
 

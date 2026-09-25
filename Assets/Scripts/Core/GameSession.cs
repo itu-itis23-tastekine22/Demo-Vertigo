@@ -63,4 +63,12 @@ public class GameSession
         _inventory.Clear();
         ZoneChanged?.Invoke();
     }
+
+    /// <summary>
+    /// Verilen herhangi bir zone numarasının türünü döner.
+    /// </summary>
+    public WheelZoneType GetZoneType(int zone)
+    {
+        return _settings.GetZoneType(zone);
+    }
 }
