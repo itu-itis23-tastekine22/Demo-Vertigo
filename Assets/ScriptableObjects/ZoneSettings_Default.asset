@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   safeZoneInterval: 5
   superZoneInterval: 30
-  normalWheel: {fileID: 0}
-  safeWheel: {fileID: 0}
-  superWheel: {fileID: 0}
+  normalWheel: {fileID: 11400000, guid: a216a39e5f3894b8492bfbbeb948f932, type: 2}
+  safeWheel: {fileID: 11400000, guid: 62bd756b9182f4fc99738ece142c1cc7, type: 2}
+  superWheel: {fileID: 11400000, guid: 2370903c03fb8496b8b779eca9cac1a8, type: 2}
   rewardIncreaseRate: 0.1

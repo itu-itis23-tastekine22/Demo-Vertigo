@@ -8,7 +8,8 @@ public class GameController : MonoBehaviour
     [Header("Views")]
     [SerializeField] private WheelView wheelView;
     [SerializeField] private RewardsPanelView rewardsPanelView;
-    [SerializeField] private ZoneBarView zoneBarView; // EKLENDİ
+    [SerializeField] private ZoneBarView zoneBarView;
+    [SerializeField] private BombPopupView bombPopupView; // EKLENDİ
 
     private GameSession _session;
     private SpinResolver _resolver;
@@ -27,7 +28,13 @@ public class GameController : MonoBehaviour
         _session.ZoneChanged += RefreshView;
         _session.Inventory.Changed += HandleInventoryChanged;
 
-        // EKLENDİ: Zone şeridini ilk çizimden önce hazırla
+        // EKLENDİ: Bomb pop-up event aboneliği ve oyun başlangıcında gizlenmesi
+        if (bombPopupView != null)
+        {
+            bombPopupView.GiveUpClicked += HandleGiveUpClicked;
+            bombPopupView.Hide();
+        }
+
         zoneBarView.Initialize(_session.GetZoneType);
 
         RefreshView();
@@ -43,6 +50,11 @@ public class GameController : MonoBehaviour
         if (rewardsPanelView != null)
         {
             rewardsPanelView.LeaveClicked -= HandleLeaveClicked;
+        }
+
+        if (bombPopupView != null)
+        {
+            bombPopupView.GiveUpClicked -= HandleGiveUpClicked; // EKLENDİ
         }
 
         if (_session != null)
@@ -64,7 +76,6 @@ public class GameController : MonoBehaviour
         wheelView.SetSpinInteractable(true);
         rewardsPanelView.SetLeaveInteractable(_session.CanLeave);
 
-        // EKLENDİ: Mevcut zone'u şeritte güncelle ve kaydır
         zoneBarView.SetCurrentZone(_session.CurrentZone);
     }
 
@@ -86,13 +97,21 @@ public class GameController : MonoBehaviour
 
         if (isBomb)
         {
-            Debug.LogWarning("<color=red>[SONUÇ]</color> BOMBA VURDU! Tüm ödüller kaybedildi.");
-            _session.Reset();
+            Debug.LogWarning("<color=red>[SONUÇ]</color> BOMBA VURDU! Pop-up açılıyor.");
+            // Reset çağrısı Give Up butonuna devredildi
+            bombPopupView.Show();
         }
         else
         {
             Debug.Log($"<color=green>[SONUÇ]</color> Ödül kazanıldı! Yeni Zone: {_session.CurrentZone} | Farklı Ödül Sayısı: {_session.Inventory.Items.Count}");
         }
+    }
+
+    // EKLENDİ: Bomb pop-up Give Up tıklandığında çalışacak metot
+    private void HandleGiveUpClicked()
+    {
+        bombPopupView.Hide();
+        _session.Reset(); // Envanter temizlenir, zone 1 olur ve RefreshView tetiklenir
     }
 
     private void HandleLeaveClicked()
