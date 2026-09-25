@@ -9,6 +9,7 @@ public class WheelView : MonoBehaviour
     [SerializeField] private Image wheelBaseImage;
     [SerializeField] private Image wheelIndicatorImage;
     [SerializeField] private RectTransform wheelRotator;
+    [SerializeField] private Button spinButton;
 
     [Header("Slices")]
     [SerializeField] private WheelSliceView[] slices;
@@ -19,19 +20,58 @@ public class WheelView : MonoBehaviour
     [SerializeField] private Ease spinEase = Ease.OutQuart;
 
     [Header("Debug / Testing")]
-    [SerializeField] private WheelConfig testConfig;                  // DEĞİŞTİ: _testConfig → testConfig
+    [SerializeField] private WheelConfig testConfig;
 
     private bool isSpinning;
 
-    // SİLİNDİ: public RectTransform WheelRotator => wheelRotator;
     public bool IsSpinning => isSpinning;
+
+    // Dışarıdan Controller'ın dinleyeceği buton event'i
+    public event Action SpinClicked;
 
 #if UNITY_EDITOR
     private void OnValidate()
     {
         slices = GetComponentsInChildren<WheelSliceView>(true);
+
+        if (spinButton == null)
+        {
+            spinButton = GetComponentInChildren<Button>(true);
+        }
     }
 #endif
+
+    private void OnEnable()
+    {
+        if (spinButton != null)
+        {
+            spinButton.onClick.AddListener(OnSpinButtonClicked);
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (spinButton != null)
+        {
+            spinButton.onClick.RemoveListener(OnSpinButtonClicked);
+        }
+    }
+
+    private void OnSpinButtonClicked()
+    {
+        SpinClicked?.Invoke();
+    }
+
+    /// <summary>
+    /// Çark dönerken butonun tekrar tıklanmasını engellemek için kullanılır.
+    /// </summary>
+    public void SetSpinInteractable(bool value)
+    {
+        if (spinButton != null)
+        {
+            spinButton.interactable = value;
+        }
+    }
 
     public void ApplyConfig(WheelConfig config)
     {
@@ -75,9 +115,8 @@ public class WheelView : MonoBehaviour
 
         float sliceAngle = 360f / slices.Length;
         float targetAngle = targetSliceIndex * sliceAngle;
-        float totalRotation = (fullRotations * 360f) - targetAngle;   // DEĞİŞTİ: + → -
+        float totalRotation = (fullRotations * 360f) - targetAngle;
 
-        // SİLİNDİ: wheelRotator.localEulerAngles = Vector3.zero;
         wheelRotator
             .DOLocalRotate(new Vector3(0f, 0f, -totalRotation), spinDuration, RotateMode.FastBeyond360)
             .SetEase(spinEase)
@@ -91,7 +130,7 @@ public class WheelView : MonoBehaviour
     [ContextMenu("Apply Test Config")]
     private void ApplyTestConfig()
     {
-        ApplyConfig(testConfig);                                      // DEĞİŞTİ: _testConfig → testConfig
+        ApplyConfig(testConfig);
     }
 
     [ContextMenu("Test Spin")]

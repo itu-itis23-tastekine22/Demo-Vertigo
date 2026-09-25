@@ -25,12 +25,12 @@ public class WheelSliceView : MonoBehaviour
     public void Setup(WheelSliceData sliceData)
     {
         // Küçük harfli alan adları (data ve amount)
-        if (sliceData == null || sliceData.data == null)
+        if (sliceData == null || sliceData.Data == null)
         {
             return;
         }
 
-        iconImage.sprite = sliceData.data.Icon;
+        iconImage.sprite = sliceData.Data.Icon;
 
         if (sliceData.IsBomb)
         {
@@ -39,7 +39,7 @@ public class WheelSliceView : MonoBehaviour
         else
         {
             amountText.gameObject.SetActive(true);
-            amountText.text = "x" + sliceData.amount;
+            amountText.text = "x" + sliceData.Amount;
         }
     }
 }

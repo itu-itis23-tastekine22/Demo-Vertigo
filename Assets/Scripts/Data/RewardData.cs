@@ -42,13 +42,15 @@ public class RewardData : ScriptableObject
 /// Çark dilimlerinde (Wheel Slice) veya kazanılan envanter listesinde 
 /// RewardData ile miktarı eşleştirmek için kullanılan serileştirilebilir model.
 /// </summary>
+
 [Serializable]
 public class WheelSliceData
 {
-    public RewardData data;
-    public int amount;
+    [SerializeField] private RewardData data;     // DEĞİŞTİ: public → [SerializeField] private
+    [SerializeField] private int amount;          // DEĞİŞTİ: public → [SerializeField] private
 
- 
+    public RewardData Data => data;               // YENİ
+    public int Amount => amount;                  // YENİ
 
     public bool IsEmpty => data == null;
     public bool IsBomb => data != null && data.IsBomb;
