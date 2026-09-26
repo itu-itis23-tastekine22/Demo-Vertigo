@@ -24,6 +24,8 @@ public class RewardData : ScriptableObject
 
     [Header("Visual")]
     [SerializeField] private Sprite icon;
+    [SerializeField] private bool scalesWithZone = true;
+    public bool ScalesWithZone => scalesWithZone;
 
     
     public string DisplayName => displayName;

@@ -19,16 +19,16 @@ MonoBehaviour:
   - data: {fileID: 11400000, guid: 233317a3e6d20412b9b34673b55ed371, type: 2}
     amount: 10
   - data: {fileID: 11400000, guid: 2856b24dbe5504c39bed80383b526b79, type: 2}
-    amount: 5
+    amount: 10
   - data: {fileID: 11400000, guid: 2022570dd72924ef09714c980a044d2a, type: 2}
-    amount: 100
-  - data: {fileID: 11400000, guid: ac1caa5f73c9d4b059e9237195b67926, type: 2}
+    amount: 150
+  - data: {fileID: 11400000, guid: 595c9f118a2284ca1852ffd158bb3a7b, type: 2}
     amount: 1
   - data: {fileID: 11400000, guid: ecfd51f5321f44c94a661946a35504b7, type: 2}
     amount: 0
   - data: {fileID: 11400000, guid: af197187e9a6749728dfb7391bc882a2, type: 2}
-    amount: 5
-  - data: {fileID: 11400000, guid: 233317a3e6d20412b9b34673b55ed371, type: 2}
-    amount: 20
-  - data: {fileID: 11400000, guid: 1c27469e1960d47229d4b2f28183c86f, type: 2}
-    amount: 5
+    amount: 10
+  - data: {fileID: 11400000, guid: ac1caa5f73c9d4b059e9237195b67926, type: 2}
+    amount: 1
+  - data: {fileID: 11400000, guid: 41f8a6bc06f6c48c6b6df9a37b82192c, type: 2}
+    amount: 1

@@ -9,7 +9,7 @@ public class GameController : MonoBehaviour
     [SerializeField] private WheelView wheelView;
     [SerializeField] private RewardsPanelView rewardsPanelView;
     [SerializeField] private ZoneBarView zoneBarView;
-    [SerializeField] private BombPopupView bombPopupView; // EKLENDİ
+    [SerializeField] private BombPopupView bombPopupView;
 
     private GameSession _session;
     private SpinResolver _resolver;
@@ -28,7 +28,6 @@ public class GameController : MonoBehaviour
         _session.ZoneChanged += RefreshView;
         _session.Inventory.Changed += HandleInventoryChanged;
 
-        // EKLENDİ: Bomb pop-up event aboneliği ve oyun başlangıcında gizlenmesi
         if (bombPopupView != null)
         {
             bombPopupView.GiveUpClicked += HandleGiveUpClicked;
@@ -54,7 +53,7 @@ public class GameController : MonoBehaviour
 
         if (bombPopupView != null)
         {
-            bombPopupView.GiveUpClicked -= HandleGiveUpClicked; // EKLENDİ
+            bombPopupView.GiveUpClicked -= HandleGiveUpClicked;
         }
 
         if (_session != null)
@@ -71,7 +70,8 @@ public class GameController : MonoBehaviour
 
     private void RefreshView()
     {
-        wheelView.ApplyConfig(_session.CurrentWheel);
+        // Session'ın hesaplama metodunu çarka geçiyoruz
+        wheelView.ApplyConfig(_session.CurrentWheel, _session.GetSliceAmount);
 
         wheelView.SetSpinInteractable(true);
         rewardsPanelView.SetLeaveInteractable(_session.CanLeave);
@@ -98,7 +98,6 @@ public class GameController : MonoBehaviour
         if (isBomb)
         {
             Debug.LogWarning("<color=red>[SONUÇ]</color> BOMBA VURDU! Pop-up açılıyor.");
-            // Reset çağrısı Give Up butonuna devredildi
             bombPopupView.Show();
         }
         else
@@ -107,11 +106,10 @@ public class GameController : MonoBehaviour
         }
     }
 
-    // EKLENDİ: Bomb pop-up Give Up tıklandığında çalışacak metot
     private void HandleGiveUpClicked()
     {
         bombPopupView.Hide();
-        _session.Reset(); // Envanter temizlenir, zone 1 olur ve RefreshView tetiklenir
+        _session.Reset();
     }
 
     private void HandleLeaveClicked()

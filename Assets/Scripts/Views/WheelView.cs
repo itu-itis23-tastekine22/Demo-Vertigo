@@ -25,8 +25,6 @@ public class WheelView : MonoBehaviour
     private bool isSpinning;
 
     public bool IsSpinning => isSpinning;
-
-    // Dışarıdan Controller'ın dinleyeceği buton event'i
     public event Action SpinClicked;
 
 #if UNITY_EDITOR
@@ -62,9 +60,6 @@ public class WheelView : MonoBehaviour
         SpinClicked?.Invoke();
     }
 
-    /// <summary>
-    /// Çark dönerken butonun tekrar tıklanmasını engellemek için kullanılır.
-    /// </summary>
     public void SetSpinInteractable(bool value)
     {
         if (spinButton != null)
@@ -73,7 +68,11 @@ public class WheelView : MonoBehaviour
         }
     }
 
-    public void ApplyConfig(WheelConfig config)
+    /// <summary>
+    /// Çarkı ve dilimleri gelen konfigürasyona göre günceller.
+    /// amountCalculator: Her dilim için ekrana yazılacak miktarı dönen delege.
+    /// </summary>
+    public void ApplyConfig(WheelConfig config, Func<WheelSliceData, int> amountCalculator = null)
     {
         if (config == null)
         {
@@ -94,16 +93,18 @@ public class WheelView : MonoBehaviour
         int count = Mathf.Min(slices.Length, config.Slices.Count);
         for (int i = 0; i < count; i++)
         {
-            slices[i].Setup(config.Slices[i]);
+            var sliceData = config.Slices[i];
+            
+            // Fonksiyon verilmişse hesaplanmış miktarı al, verilmemişse config'teki temel sayıyı kullan
+            int displayAmount = amountCalculator != null ? amountCalculator(sliceData) : sliceData.Amount;
+            
+            slices[i].Setup(sliceData, displayAmount);
         }
     }
 
     public void Spin(int targetSliceIndex, Action onComplete = null)
     {
-        if (isSpinning)
-        {
-            return;
-        }
+        if (isSpinning) return;
 
         if (slices == null || slices.Length == 0)
         {
@@ -131,21 +132,5 @@ public class WheelView : MonoBehaviour
     private void ApplyTestConfig()
     {
         ApplyConfig(testConfig);
-    }
-
-    [ContextMenu("Test Spin")]
-    private void TestSpin()
-    {
-        if (slices == null || slices.Length == 0)
-        {
-            Debug.LogWarning($"[{nameof(WheelView)}] Çarkta dilim bulunmuyor!");
-            return;
-        }
-
-        int randomSlice = UnityEngine.Random.Range(0, slices.Length);
-        Spin(randomSlice, () =>
-        {
-            Debug.Log($"[WheelView] Çark durdu! Kazanan dilim indeksi: {randomSlice}");
-        });
     }
 }

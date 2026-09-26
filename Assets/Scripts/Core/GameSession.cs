@@ -13,7 +13,6 @@ public class GameSession
     public WheelConfig CurrentWheel => _settings.GetWheelConfig(_currentZone);
     public RewardInventory Inventory => _inventory;
 
-    // PDF kuralı: Oyuncu yalnızca Safe veya Super zone'larda ödüllerini alıp çekilebilir (Cash out/Leave).
     public bool CanLeave => CurrentZoneType == WheelZoneType.Safe || CurrentZoneType == WheelZoneType.Super;
 
     public GameSession(ZoneSettings settings, RewardInventory inventory)
@@ -24,10 +23,24 @@ public class GameSession
     }
 
     /// <summary>
-    /// Çevirme sonucunu çözümler.
-    /// Bomba geldiyse true döner (envanter silinmez; pop-up kararına bırakılır).
-    /// Ödül geldiyse miktar ölçeklenip envantere eklenir, zone artırılır ve false döner.
+    /// Verilen dilimin mevcut zone'a göre nihai miktarını hesaplar.
+    /// Ödül ölçeklenmiyorsa (silah vb.) temel miktar döner; ölçekleniyorsa zone çarpanı uygulanır.
     /// </summary>
+    public int GetSliceAmount(WheelSliceData slice)
+    {
+        if (slice == null || slice.IsBomb || slice.Data == null)
+        {
+            return 0;
+        }
+
+        if (!slice.Data.ScalesWithZone)
+        {
+            return slice.Amount;
+        }
+
+        return _settings.GetScaledAmount(slice.Amount, _currentZone);
+    }
+
     public bool ResolveSpin(int sliceIndex)
     {
         var wheel = CurrentWheel;
@@ -39,14 +52,14 @@ public class GameSession
 
         var slice = wheel.Slices[sliceIndex];
 
-        // NOT: WheelSlice yapındaki alan adlarına göre 'slice.IsBomb', 'slice.Reward' ve 'slice.Amount' isimlerini kontrol edebilirsin.
         if (slice.IsBomb)
         {
             return true;
         }
 
-        int scaledAmount = _settings.GetScaledAmount(slice.Amount, _currentZone);
-        _inventory.Add(slice.Data, scaledAmount);
+        // Dilimin hesaplanmış gerçek miktarı ekleniyor
+        int finalAmount = GetSliceAmount(slice);
+        _inventory.Add(slice.Data, finalAmount);
 
         _currentZone++;
         ZoneChanged?.Invoke();
@@ -54,9 +67,6 @@ public class GameSession
         return false;
     }
 
-    /// <summary>
-    /// Oyunu başlangıç durumuna döndürür: Zone 1'e alınır ve envanter sıfırlanır.
-    /// </summary>
     public void Reset()
     {
         _currentZone = 1;
@@ -64,9 +74,6 @@ public class GameSession
         ZoneChanged?.Invoke();
     }
 
-    /// <summary>
-    /// Verilen herhangi bir zone numarasının türünü döner.
-    /// </summary>
     public WheelZoneType GetZoneType(int zone)
     {
         return _settings.GetZoneType(zone);

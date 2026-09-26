@@ -17,18 +17,18 @@ MonoBehaviour:
   wheelIndicatorSprite: {fileID: 21300000, guid: f309adef9456a46c69c5c709b903b71f, type: 3}
   slices:
   - data: {fileID: 11400000, guid: 233317a3e6d20412b9b34673b55ed371, type: 2}
-    amount: 10
-  - data: {fileID: 11400000, guid: 2856b24dbe5504c39bed80383b526b79, type: 2}
-    amount: 5
-  - data: {fileID: 11400000, guid: 2022570dd72924ef09714c980a044d2a, type: 2}
-    amount: 100
-  - data: {fileID: 11400000, guid: ac1caa5f73c9d4b059e9237195b67926, type: 2}
+    amount: 60
+  - data: {fileID: 11400000, guid: d1ac57a26517d475d864af1b87357d01, type: 2}
+    amount: 1
+  - data: {fileID: 11400000, guid: 235a3f444eecb4b159455b838ccba015, type: 2}
     amount: 1
   - data: {fileID: 11400000, guid: 2022570dd72924ef09714c980a044d2a, type: 2}
-    amount: 10
-  - data: {fileID: 11400000, guid: af197187e9a6749728dfb7391bc882a2, type: 2}
-    amount: 5
-  - data: {fileID: 11400000, guid: 233317a3e6d20412b9b34673b55ed371, type: 2}
-    amount: 20
-  - data: {fileID: 11400000, guid: 1c27469e1960d47229d4b2f28183c86f, type: 2}
-    amount: 5
+    amount: 500
+  - data: {fileID: 11400000, guid: b3d93d9d888ea4691999223fc589133a, type: 2}
+    amount: 1
+  - data: {fileID: 11400000, guid: 8ddef5af34a7544d98c20f70c85f5b87, type: 2}
+    amount: 1
+  - data: {fileID: 11400000, guid: ff8a25bc98941483e9014d858edf56ee, type: 2}
+    amount: 25
+  - data: {fileID: 11400000, guid: 995a68d1438f04a0eb00db3355a2cea0, type: 2}
+    amount: 1

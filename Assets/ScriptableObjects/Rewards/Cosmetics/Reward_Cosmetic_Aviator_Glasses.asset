@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b80c5e43f0f948958df885ff4b5d5ee, type: 3}
   m_Name: Reward_Cosmetic_Aviator_Glasses
   m_EditorClassIdentifier: 
-  displayName: Pumpkin Helmet
+  displayName: Aviator Glasses
   rewardType: 8
-  icon: {fileID: 21300000, guid: cf6f69aa4c653485b9d3886da24dea3a, type: 3}
+  icon: {fileID: 21300000, guid: 7d70000bae49e4a00846c8a6219b3222, type: 3}
