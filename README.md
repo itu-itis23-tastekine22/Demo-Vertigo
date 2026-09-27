@@ -2,9 +2,9 @@
 
 A wheel of fortune game made for the Vertigo Games developer demo. Spin the wheel to collect rewards zone by zone, but watch out for the bomb: it takes everything you've collected. Every 5th zone is a safe silver spin, every 30th zone is a golden spin with special rewards, and you can leave with your rewards at safe or super zones.
 
-## Download & Video
+## Download & Video & Screenshots
 - **APK:** see [Releases](../../releases)
-- **Gameplay video:** [Google Drive](https://drive.google.com/file/d/1D_XlJKJ7pLpZfadUqPMQ_0oUjaDy1PxA/view?usp=share_link)
+- **Gameplay video and Screenshots:** [Google Drive](https://drive.google.com/drive/folders/1KQ4AoMCZ2IE6AAgjhpkMsLGT7o8oc1kI?usp=sharing)
 
 ## Tech
 - Unity 2021.3.45f1 (LTS)
