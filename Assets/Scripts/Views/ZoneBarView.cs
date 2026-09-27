@@ -29,7 +29,7 @@ public class ZoneBarView : MonoBehaviour
     private int _lastHighlightedZone = -1;
 
     /// <summary>
-    /// Zone kurallarını bilmeden sadece zone türünü sorabileceği sağlayıcıyı bağlar.
+    /// Zone türünü sorar.
     /// </summary>
     public void Initialize(Func<int, WheelZoneType> zoneTypeProvider)
     {
@@ -37,13 +37,13 @@ public class ZoneBarView : MonoBehaviour
     }
 
     /// <summary>
-    /// Şeritteki aktif zone'u günceller, eksik kutuları tamamlar ve şeridi ortaya hizalar.
+    /// Şeritteki aktif aktif olan zone'u günceller ve şeridi ortaya hizalar.
     /// </summary>
     public void SetCurrentZone(int zone)
     {
         if (_getZoneType == null) return;
 
-        // 1. İhtiyaç oldukça kutu üret (zone + zonesAhead'e kadar)
+        // 1. İhtiyaç oldukça kutu üret 
         while (_items.Count < zone + zonesAhead)
         {
             int nextZoneNumber = _items.Count + 1;
@@ -69,7 +69,7 @@ public class ZoneBarView : MonoBehaviour
             _lastHighlightedZone = zone;
         }
 
-        // 4. Hedef kutunun ortasını görünür alanın (viewport) ortasına getirecek hedef X pozisyonunu hesapla
+        // Hedef X pozisyonunu hesaplama işlemi
         float itemWidth = ((RectTransform)itemPrefab.transform).rect.width;
         if (itemWidth <= 0f)
         {

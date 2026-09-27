@@ -32,27 +32,24 @@ public class RewardData : ScriptableObject
     public RewardType Type => rewardType;
     public Sprite Icon => icon;
 
-    /// <summary>
-    /// Bu ödülün bomba olup olmadığını kontrol eder.
-    /// </summary>
+    //Bomba Kontrolü
     public bool IsBomb => rewardType == RewardType.Bomb;
 
 
 }
 
 /// <summary>
-/// Çark dilimlerinde (Wheel Slice) veya kazanılan envanter listesinde 
-/// RewardData ile miktarı eşleştirmek için kullanılan serileştirilebilir model.
+/// Çark dilimlerinde veya kazanılan envanter listesinde ödül verileriyle miktari eşleme
 /// </summary>
 
 [Serializable]
 public class WheelSliceData
 {
-    [SerializeField] private RewardData data;     // DEĞİŞTİ: public → [SerializeField] private
-    [SerializeField] private int amount;          // DEĞİŞTİ: public → [SerializeField] private
+    [SerializeField] private RewardData data;     
+    [SerializeField] private int amount;          
 
-    public RewardData Data => data;               // YENİ
-    public int Amount => amount;                  // YENİ
+    public RewardData Data => data;               
+    public int Amount => amount;                  
 
     public bool IsEmpty => data == null;
     public bool IsBomb => data != null && data.IsBomb;

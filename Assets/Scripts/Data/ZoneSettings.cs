@@ -17,7 +17,6 @@ public class ZoneSettings : ScriptableObject
 
     /// <summary>
     /// Verilen zone indeksine göre bölge türünü belirler.
-    /// Süper aralık önceliklidir; ardından güvenli aralık kontrol edilir.
     /// </summary>
     public WheelZoneType GetZoneType(int zone)
     {

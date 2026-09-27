@@ -23,8 +23,8 @@ public class GameSession
     }
 
     /// <summary>
-    /// Verilen dilimin mevcut zone'a göre nihai miktarını hesaplar.
-    /// Ödül ölçeklenmiyorsa (silah vb.) temel miktar döner; ölçekleniyorsa zone çarpanı uygulanır.
+    /// Verilen dilimin mevcut zone'a göre miktarını hesaplama işlemi
+    /// Ödül non-scalable ise ana miktar döner. Scalable ise zone çarpanıyla çarpılır
     /// </summary>
     public int GetSliceAmount(WheelSliceData slice)
     {
@@ -57,7 +57,7 @@ public class GameSession
             return true;
         }
 
-        // Dilimin hesaplanmış gerçek miktarı ekleniyor
+        // Dilimin hesaplanmış gerçek miktarı
         int finalAmount = GetSliceAmount(slice);
         _inventory.Add(slice.Data, finalAmount);
 

@@ -70,7 +70,7 @@ public class GameController : MonoBehaviour
 
     private void RefreshView()
     {
-        // Session'ın hesaplama metodunu çarka geçiyoruz
+        // Hesaplama metodunu çarka geçirme işlemi
         wheelView.ApplyConfig(_session.CurrentWheel, _session.GetSliceAmount);
 
         wheelView.SetSpinInteractable(true);

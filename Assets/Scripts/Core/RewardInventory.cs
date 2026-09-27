@@ -3,16 +3,14 @@ using System.Collections.Generic;
 
 public class RewardInventory
 {
-    // readonly: referansın değiştirilmesini engeller, sözlüğün içi güncellenebilir.
+    
     private readonly Dictionary<RewardData, int> _items = new Dictionary<RewardData, int>();
-
-    // Dış dünyadan sözlüğe sadece okunabilir erişim verilir (encapsulation).
     public IReadOnlyDictionary<RewardData, int> Items => _items;
 
     // Envanterde herhangi bir değişiklik olduğunda UI'ı haberdar etmek için event.
     public event Action Changed;
 
-    // Envanterin boş olup olmadığını kontrol eden yardımcı özellik.
+    // Envanterin boş olup olmadığını kontrol eden özellik
     public bool IsEmpty => _items.Count == 0;
 
     /// <summary>

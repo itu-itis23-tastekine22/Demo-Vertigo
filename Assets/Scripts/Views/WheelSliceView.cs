@@ -24,7 +24,7 @@ public class WheelSliceView : MonoBehaviour
 
     public void Setup(WheelSliceData sliceData, int displayAmount)
     {
-        // Küçük harfli alan adları (data ve amount)
+        
         if (sliceData == null || sliceData.Data == null)
         {
             return;

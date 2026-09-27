@@ -3,9 +3,9 @@ using UnityEngine;
 
 public enum WheelZoneType
 {
-    Normal,     // Standart çark (1 bomba, bronz tema)
-    Safe,       // Her 5. bölge (bomba yok, gümüş tema)
-    Super       // Her 30. bölge (bomba yok, altın tema)
+    Normal,     // Standart çark 
+    Safe,       // Her 5. bölge 
+    Super       // Her 30. bölge 
 }
 
 [CreateAssetMenu(fileName = "WheelConfig_New", menuName = "Wheel Game/Wheel Config")]

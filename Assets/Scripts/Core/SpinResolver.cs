@@ -3,8 +3,6 @@ using System;
 public class SpinResolver
 {
     private readonly IRandomProvider _randomProvider;
-
-    // Dependency Inversion: Rastgelelik sağlayıcısını dışarıdan alıyoruz.
     public SpinResolver(IRandomProvider randomProvider)
     {
         _randomProvider = randomProvider ?? throw new ArgumentNullException(nameof(randomProvider));

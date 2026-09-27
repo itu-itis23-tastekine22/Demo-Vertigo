@@ -47,7 +47,7 @@ public class BombPopupView : MonoBehaviour
     }
 
     /// <summary>
-    /// Paneli aktif eder ve pencereyi OutBack eğrisiyle büyüterek açar.
+    /// Paneli aktif eder.
     /// </summary>
     public void Show()
     {
@@ -62,7 +62,7 @@ public class BombPopupView : MonoBehaviour
     }
 
     /// <summary>
-    /// Paneli doğrudan kapatır.
+    /// Paneli kapatır.
     /// </summary>
     public void Hide()
     {

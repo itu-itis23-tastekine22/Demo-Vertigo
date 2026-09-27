@@ -70,7 +70,7 @@ public class WheelView : MonoBehaviour
 
     /// <summary>
     /// Çarkı ve dilimleri gelen konfigürasyona göre günceller.
-    /// amountCalculator: Her dilim için ekrana yazılacak miktarı dönen delege.
+    /// amountCalculator: Her dilim için ekrana yazılacak miktarı döndürür.
     /// </summary>
     public void ApplyConfig(WheelConfig config, Func<WheelSliceData, int> amountCalculator = null)
     {
