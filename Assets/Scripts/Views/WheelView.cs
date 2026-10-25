@@ -2,6 +2,7 @@ using System;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
+using VertigoWheel.Data;
 
 public class WheelView : MonoBehaviour
 {

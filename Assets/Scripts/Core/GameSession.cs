@@ -1,4 +1,5 @@
 using System;
+using VertigoWheel.Data;
 
 public class GameSession
 {
@@ -22,10 +23,6 @@ public class GameSession
         _currentZone = 1;
     }
 
-    /// <summary>
-    /// Verilen dilimin mevcut zone'a göre miktarını hesaplama işlemi
-    /// Ödül non-scalable ise ana miktar döner. Scalable ise zone çarpanıyla çarpılır
-    /// </summary>
     public int GetSliceAmount(WheelSliceData slice)
     {
         if (slice == null || slice.IsBomb || slice.Data == null)
@@ -33,7 +30,7 @@ public class GameSession
             return 0;
         }
 
-        if (!slice.Data.ScalesWithZone)
+        if (!slice.Data.IsScaledByZone)          // DEĞİŞTİ: ScalesWithZone → IsScaledByZone
         {
             return slice.Amount;
         }
@@ -57,7 +54,6 @@ public class GameSession
             return true;
         }
 
-        // Dilimin hesaplanmış gerçek miktarı
         int finalAmount = GetSliceAmount(slice);
         _inventory.Add(slice.Data, finalAmount);
 

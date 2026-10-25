@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-
+using VertigoWheel.Data;
 public enum WheelZoneType
 {
     Normal,     // Standart çark 

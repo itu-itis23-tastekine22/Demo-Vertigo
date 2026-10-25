@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using VertigoWheel.Data;
 
 public class RewardsPanelView : MonoBehaviour
 {
