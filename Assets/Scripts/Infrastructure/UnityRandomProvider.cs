@@ -1,6 +1,7 @@
 using UnityEngine;
+using VertigoWheel.Core;
 
-namespace VertigoWheel.Core
+namespace VertigoWheel.Infrastructure
 {
     public sealed class UnityRandomProvider : IRandomProvider
     {
