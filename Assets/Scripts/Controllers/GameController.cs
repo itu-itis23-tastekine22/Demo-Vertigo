@@ -47,6 +47,11 @@ namespace VertigoWheel.Controllers
 
         private void OnEnable()
         {
+            if (_eventBus == null)
+            {
+                return;
+            }
+
             _eventBus.Subscribe<SpinRequestedEvent>(HandleSpinRequested);
             _eventBus.Subscribe<SpinAnimationCompletedEvent>(HandleSpinAnimationCompleted);
             _eventBus.Subscribe<LeaveRequestedEvent>(HandleLeaveRequested);
@@ -59,6 +64,10 @@ namespace VertigoWheel.Controllers
 
         private void OnDisable()
         {
+            if (_eventBus == null)
+            {
+                return;
+            }
             _eventBus.Unsubscribe<SpinRequestedEvent>(HandleSpinRequested);
             _eventBus.Unsubscribe<SpinAnimationCompletedEvent>(HandleSpinAnimationCompleted);
             _eventBus.Unsubscribe<LeaveRequestedEvent>(HandleLeaveRequested);
