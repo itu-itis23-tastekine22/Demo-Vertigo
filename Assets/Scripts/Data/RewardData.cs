@@ -37,9 +37,6 @@ namespace VertigoWheel.Data
             get { return _isScaledByZone; }
         }
 
-        public bool IsBomb
-        {
-            get { return _rewardType == RewardType.Bomb; }
-        }
+
     }
 }

@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using VertigoWheel.Data;
+using VertigoWheel.Views;
 
 public class RewardItemView : MonoBehaviour
 {
@@ -39,7 +40,7 @@ public class RewardItemView : MonoBehaviour
 
         if (amountText != null)
         {
-            amountText.text = $"x{amount}";
+            amountText.text = AmountFormatter.Format(amount);
         }
     }
 }

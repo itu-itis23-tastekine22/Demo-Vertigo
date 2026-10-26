@@ -1,127 +1,127 @@
 using UnityEngine;
+using UnityEngine.Serialization;
+using VertigoWheel.Core;
+using VertigoWheel.Data;
+using VertigoWheel.Events;
+using VertigoWheel.Views;
 
-public class GameController : MonoBehaviour
+namespace VertigoWheel.Controllers
 {
-    [Header("Configuration")]
-    [SerializeField] private ZoneSettings zoneSettings;
-
-    [Header("Views")]
-    [SerializeField] private WheelView wheelView;
-    [SerializeField] private RewardsPanelView rewardsPanelView;
-    [SerializeField] private ZoneBarView zoneBarView;
-    [SerializeField] private BombPopupView bombPopupView;
-
-    private GameSession _session;
-    private SpinResolver _resolver;
-
-    private void Awake()
+    public class GameController : MonoBehaviour
     {
-        var inventory = new RewardInventory();
-        _session = new GameSession(zoneSettings, inventory);
-        _resolver = new SpinResolver(new UnityRandomProvider());
-    }
+        [Header("Configuration")]
+        [SerializeField, FormerlySerializedAs("zoneSettings")] private ZoneSettings _zoneSettings;
 
-    private void Start()
-    {
-        wheelView.SpinClicked += HandleSpinClicked;
-        rewardsPanelView.LeaveClicked += HandleLeaveClicked;
-        _session.ZoneChanged += RefreshView;
-        _session.Inventory.Changed += HandleInventoryChanged;
+        [Header("Views")]
+        [SerializeField, FormerlySerializedAs("wheelView")] private WheelView _wheelView;
+        [SerializeField, FormerlySerializedAs("rewardsPanelView")] private RewardsPanelView _rewardsPanelView;
+        [SerializeField, FormerlySerializedAs("zoneBarView")] private ZoneBarView _zoneBarView;
+        [SerializeField, FormerlySerializedAs("bombPopupView")] private BombPopupView _bombPopupView;
 
-        if (bombPopupView != null)
+        private IEventBus _eventBus;
+        private GameSession _session;
+
+        private void Awake()
         {
-            bombPopupView.GiveUpClicked += HandleGiveUpClicked;
-            bombPopupView.Hide();
+            _eventBus = new EventBus();
+
+            IRandomProvider randomProvider = new UnityRandomProvider();
+            RewardInventory inventory = new RewardInventory(_eventBus);
+            WheelBuilder wheelBuilder = new WheelBuilder(_zoneSettings, randomProvider);
+            SpinResolver spinResolver = new SpinResolver(randomProvider);
+
+            _session = new GameSession(wheelBuilder, spinResolver, inventory, _eventBus);
         }
 
-        zoneBarView.Initialize(_session.GetZoneType);
-
-        RefreshView();
-    }
-
-    private void OnDestroy()
-    {
-        if (wheelView != null)
+        private void OnEnable()
         {
-            wheelView.SpinClicked -= HandleSpinClicked;
+            _eventBus.Subscribe<ZoneChangedEvent>(HandleZoneChanged);
+            _eventBus.Subscribe<RunStateChangedEvent>(HandleRunStateChanged);
+            _eventBus.Subscribe<RunInventoryChangedEvent>(HandleInventoryChanged);
+
+            _wheelView.SpinClicked += HandleSpinClicked;
+            _wheelView.SpinAnimationCompleted += HandleSpinAnimationCompleted;
+            _rewardsPanelView.LeaveClicked += HandleLeaveClicked;
+            _bombPopupView.GiveUpClicked += HandleGiveUpClicked;
         }
 
-        if (rewardsPanelView != null)
+        private void OnDisable()
         {
-            rewardsPanelView.LeaveClicked -= HandleLeaveClicked;
+            _eventBus.Unsubscribe<ZoneChangedEvent>(HandleZoneChanged);
+            _eventBus.Unsubscribe<RunStateChangedEvent>(HandleRunStateChanged);
+            _eventBus.Unsubscribe<RunInventoryChangedEvent>(HandleInventoryChanged);
+
+            if (_wheelView)
+            {
+                _wheelView.SpinClicked -= HandleSpinClicked;
+                _wheelView.SpinAnimationCompleted -= HandleSpinAnimationCompleted;
+            }
+
+            if (_rewardsPanelView)
+            {
+                _rewardsPanelView.LeaveClicked -= HandleLeaveClicked;
+            }
+
+            if (_bombPopupView)
+            {
+                _bombPopupView.GiveUpClicked -= HandleGiveUpClicked;
+            }
         }
 
-        if (bombPopupView != null)
+        private void Start()
         {
-            bombPopupView.GiveUpClicked -= HandleGiveUpClicked;
+            _bombPopupView.Hide();
+            _zoneBarView.Initialize(_zoneSettings);
+            _session.StartNewRun();
         }
 
-        if (_session != null)
+        private void HandleSpinClicked()
         {
-            _session.ZoneChanged -= RefreshView;
-            _session.Inventory.Changed -= HandleInventoryChanged;
-        }
-    }
-
-    private void HandleInventoryChanged()
-    {
-        rewardsPanelView.Refresh(_session.Inventory.Items);
-    }
-
-    private void RefreshView()
-    {
-        // Hesaplama metodunu çarka geçirme işlemi
-        wheelView.ApplyConfig(_session.CurrentWheel, _session.GetSliceAmount);
-
-        wheelView.SetSpinInteractable(true);
-        rewardsPanelView.SetLeaveInteractable(_session.CanLeave);
-
-        zoneBarView.SetCurrentZone(_session.CurrentZone);
-    }
-
-    private void HandleSpinClicked()
-    {
-        if (wheelView.IsSpinning) return;
-
-        int targetIndex = _resolver.ResolveSliceIndex(_session.CurrentWheel);
-
-        wheelView.SetSpinInteractable(false);
-        rewardsPanelView.SetLeaveInteractable(false);
-
-        wheelView.Spin(targetIndex, () => HandleSpinCompleted(targetIndex));
-    }
-
-    private void HandleSpinCompleted(int targetIndex)
-    {
-        bool isBomb = _session.ResolveSpin(targetIndex);
-
-        if (isBomb)
-        {
-            Debug.LogWarning("<color=red>[SONUÇ]</color> BOMBA VURDU! Pop-up açılıyor.");
-            bombPopupView.Show();
-        }
-        else
-        {
-            Debug.Log($"<color=green>[SONUÇ]</color> Ödül kazanıldı! Yeni Zone: {_session.CurrentZone} | Farklı Ödül Sayısı: {_session.Inventory.Items.Count}");
-        }
-    }
-
-    private void HandleGiveUpClicked()
-    {
-        bombPopupView.Hide();
-        _session.Reset();
-    }
-
-    private void HandleLeaveClicked()
-    {
-        if (!_session.CanLeave || wheelView.IsSpinning) return;
-
-        Debug.Log("<color=yellow>[ÇIKIŞ YAPILDI]</color> Kasaya aktarılan ödüller:");
-        foreach (var item in _session.Inventory.Items)
-        {
-            Debug.Log($"- {item.Key.DisplayName}: {item.Value} adet");
+            if (_session.TryStartSpin(out int sliceIndex))
+            {
+                _wheelView.PlaySpin(sliceIndex);
+            }
         }
 
-        _session.Reset();
+        private void HandleSpinAnimationCompleted()
+        {
+            _session.CompleteSpin();
+        }
+
+        private void HandleLeaveClicked()
+        {
+            if (_session.TryLeave())
+            {
+                _session.StartNewRun();
+            }
+        }
+
+        private void HandleGiveUpClicked()
+        {
+            _bombPopupView.Hide();
+            _session.StartNewRun();
+        }
+
+        private void HandleZoneChanged(ZoneChangedEvent zoneChanged)
+        {
+            _wheelView.ShowWheel(_session.CurrentWheel);
+            _zoneBarView.SetCurrentZone(zoneChanged.Zone);
+        }
+
+        private void HandleRunStateChanged(RunStateChangedEvent stateChanged)
+        {
+            _wheelView.SetSpinInteractable(_session.CanSpin);
+            _rewardsPanelView.SetLeaveInteractable(_session.CanLeave);
+
+            if (stateChanged.State == RunState.Dead)
+            {
+                _bombPopupView.Show();
+            }
+        }
+
+        private void HandleInventoryChanged(RunInventoryChangedEvent inventoryChanged)
+        {
+            _rewardsPanelView.Refresh(_session.Inventory.Items);
+        }
     }
 }

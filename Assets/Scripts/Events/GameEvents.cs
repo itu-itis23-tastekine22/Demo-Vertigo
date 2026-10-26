@@ -31,4 +31,8 @@ namespace VertigoWheel.Events
 
         public int SliceIndex { get; }
     }
+
+    public readonly struct RunInventoryChangedEvent
+    {
+    }
 }

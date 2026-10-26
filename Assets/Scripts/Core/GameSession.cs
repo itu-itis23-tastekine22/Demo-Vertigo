@@ -1,77 +1,163 @@
 using System;
-using VertigoWheel.Data;
+using VertigoWheel.Events;
 
-public class GameSession
+namespace VertigoWheel.Core
 {
-    private readonly ZoneSettings _settings;
-    private readonly RewardInventory _inventory;
-    private int _currentZone;
-
-    public event Action ZoneChanged;
-
-    public int CurrentZone => _currentZone;
-    public WheelZoneType CurrentZoneType => _settings.GetZoneType(_currentZone);
-    public WheelConfig CurrentWheel => _settings.GetWheelConfig(_currentZone);
-    public RewardInventory Inventory => _inventory;
-
-    public bool CanLeave => CurrentZoneType == WheelZoneType.Safe || CurrentZoneType == WheelZoneType.Super;
-
-    public GameSession(ZoneSettings settings, RewardInventory inventory)
+    public sealed class GameSession
     {
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
-        _currentZone = 1;
-    }
+        private const int FirstZone = 1;
+        private const int NoPendingSlice = -1;
 
-    public int GetSliceAmount(WheelSliceData slice)
-    {
-        if (slice == null || slice.IsBomb || slice.Data == null)
+        private readonly WheelBuilder _wheelBuilder;
+        private readonly SpinResolver _spinResolver;
+        private readonly RewardInventory _inventory;
+        private readonly IEventBus _eventBus;
+
+        private int _currentZone;
+        private RunState _state;
+        private RuntimeWheel _currentWheel;
+        private int _pendingSliceIndex = NoPendingSlice;
+
+        public GameSession(WheelBuilder wheelBuilder, SpinResolver spinResolver, RewardInventory inventory, IEventBus eventBus)
         {
-            return 0;
+            if (wheelBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(wheelBuilder));
+            }
+
+            if (spinResolver == null)
+            {
+                throw new ArgumentNullException(nameof(spinResolver));
+            }
+
+            if (inventory == null)
+            {
+                throw new ArgumentNullException(nameof(inventory));
+            }
+
+            if (eventBus == null)
+            {
+                throw new ArgumentNullException(nameof(eventBus));
+            }
+
+            _wheelBuilder = wheelBuilder;
+            _spinResolver = spinResolver;
+            _inventory = inventory;
+            _eventBus = eventBus;
         }
 
-        if (!slice.Data.IsScaledByZone)          // DEĞİŞTİ: ScalesWithZone → IsScaledByZone
+        public int CurrentZone
         {
-            return slice.Amount;
+            get { return _currentZone; }
         }
 
-        return _settings.GetScaledAmount(slice.Amount, _currentZone);
-    }
-
-    public bool ResolveSpin(int sliceIndex)
-    {
-        var wheel = CurrentWheel;
-
-        if (sliceIndex < 0 || sliceIndex >= wheel.Slices.Count)
+        public RunState State
         {
-            throw new ArgumentOutOfRangeException(nameof(sliceIndex), "Geçersiz dilim indeksi.");
+            get { return _state; }
         }
 
-        var slice = wheel.Slices[sliceIndex];
-
-        if (slice.IsBomb)
+        public RuntimeWheel CurrentWheel
         {
+            get { return _currentWheel; }
+        }
+
+        public RewardInventory Inventory
+        {
+            get { return _inventory; }
+        }
+
+        public bool CanSpin
+        {
+            get { return _state == RunState.Idle; }
+        }
+
+        public bool CanLeave
+        {
+            get { return _state == RunState.Idle && _currentWheel.ZoneType.IsLeaveAllowed; }
+        }
+
+        public void StartNewRun()
+        {
+            _inventory.Clear();
+            _currentZone = FirstZone;
+            EnterCurrentZone();
+        }
+
+        public bool TryStartSpin(out int sliceIndex)
+        {
+            if (!CanSpin)
+            {
+                sliceIndex = NoPendingSlice;
+                return false;
+            }
+
+            sliceIndex = _spinResolver.ResolveSliceIndex(_currentWheel.Slices.Count);
+            _pendingSliceIndex = sliceIndex;
+
+            SetState(RunState.Spinning);
+            _eventBus.Publish(new SpinStartedEvent(sliceIndex));
             return true;
         }
 
-        int finalAmount = GetSliceAmount(slice);
-        _inventory.Add(slice.Data, finalAmount);
+        public void CompleteSpin()
+        {
+            if (_state != RunState.Spinning)
+            {
+                throw new InvalidOperationException("CompleteSpin can only be called while the wheel is spinning.");
+            }
 
-        _currentZone++;
-        ZoneChanged?.Invoke();
+            WheelSlice landedSlice = _currentWheel.Slices[_pendingSliceIndex];
+            _pendingSliceIndex = NoPendingSlice;
 
-        return false;
-    }
+            if (landedSlice.IsBomb)
+            {
+                EndRunWithBomb();
+                return;
+            }
 
-    public void Reset()
-    {
-        _currentZone = 1;
-        _inventory.Clear();
-        ZoneChanged?.Invoke();
-    }
+            CollectReward(landedSlice);
+            AdvanceZone();
+        }
 
-    public WheelZoneType GetZoneType(int zone)
-    {
-        return _settings.GetZoneType(zone);
+        public bool TryLeave()
+        {
+            if (!CanLeave)
+            {
+                return false;
+            }
+
+            SetState(RunState.Left);
+            return true;
+        }
+
+        private void EndRunWithBomb()
+        {
+            _inventory.Clear();
+            SetState(RunState.Dead);
+        }
+
+        private void CollectReward(WheelSlice slice)
+        {
+            _inventory.Add(slice.Reward, slice.Amount);
+        }
+
+        private void AdvanceZone()
+        {
+            _currentZone++;
+            EnterCurrentZone();
+        }
+
+        private void EnterCurrentZone()
+        {
+            _currentWheel = _wheelBuilder.Build(_currentZone);
+            _eventBus.Publish(new ZoneChangedEvent(_currentZone));
+            SetState(RunState.Idle);
+        }
+
+        private void SetState(RunState state)
+        {
+            _state = state;
+            _eventBus.Publish(new RunStateChangedEvent(state));
+        }
     }
 }

@@ -2,7 +2,7 @@ namespace VertigoWheel.Data
 {
     public enum RewardType
     {
-        Bomb = 0,
+        None = 0,
         Cash = 1,
         Gold = 2,
         WeaponPoints = 3,

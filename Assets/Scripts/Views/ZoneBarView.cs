@@ -1,111 +1,110 @@
-using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
+using VertigoWheel.Data;
 
-public class ZoneBarView : MonoBehaviour
+namespace VertigoWheel.Views
 {
-    [Header("Containers")]
-    [SerializeField] private RectTransform viewport;
-    [SerializeField] private RectTransform content;
-
-    [Header("Prefab & Layout")]
-    [SerializeField] private ZoneItemView itemPrefab;
-    [SerializeField] private HorizontalLayoutGroup layoutGroup;
-
-    [Header("Zone Background Sprites")]
-    [SerializeField] private Sprite normalZoneSprite;
-    [SerializeField] private Sprite safeZoneSprite;
-    [SerializeField] private Sprite superZoneSprite;
-    [SerializeField] private Sprite currentZoneSprite;
-
-    [Header("Scroll & Buffer Settings")]
-    [SerializeField] private int zonesAhead = 15;
-    [SerializeField] private float scrollDuration = 0.3f;
-
-    private readonly List<ZoneItemView> _items = new List<ZoneItemView>();
-    private Func<int, WheelZoneType> _getZoneType;
-    private int _lastHighlightedZone = -1;
-
-    /// <summary>
-    /// Zone türünü sorar.
-    /// </summary>
-    public void Initialize(Func<int, WheelZoneType> zoneTypeProvider)
+    public class ZoneBarView : MonoBehaviour
     {
-        _getZoneType = zoneTypeProvider ?? throw new ArgumentNullException(nameof(zoneTypeProvider));
-    }
+        private const int NoHighlightedZone = -1;
 
-    /// <summary>
-    /// Şeritteki aktif aktif olan zone'u günceller ve şeridi ortaya hizalar.
-    /// </summary>
-    public void SetCurrentZone(int zone)
-    {
-        if (_getZoneType == null) return;
+        [Header("Containers")]
+        [SerializeField, FormerlySerializedAs("viewport")] private RectTransform _viewport;
+        [SerializeField, FormerlySerializedAs("content")] private RectTransform _content;
 
-        // 1. İhtiyaç oldukça kutu üret 
-        while (_items.Count < zone + zonesAhead)
+        [Header("Prefab & Layout")]
+        [SerializeField, FormerlySerializedAs("itemPrefab")] private ZoneItemView _itemPrefab;
+        [SerializeField, FormerlySerializedAs("layoutGroup")] private HorizontalLayoutGroup _layoutGroup;
+
+        [Header("Highlight")]
+        [SerializeField, FormerlySerializedAs("currentZoneSprite")] private Sprite _currentZoneSprite;
+
+        [Header("Scroll Settings")]
+        [SerializeField, FormerlySerializedAs("zonesAhead"), Min(1)] private int _zonesAhead = 15;
+        [SerializeField, FormerlySerializedAs("scrollDuration"), Min(0f)] private float _scrollDuration = 0.3f;
+
+        private readonly List<ZoneItemView> _items = new List<ZoneItemView>();
+        private ZoneSettings _zoneSettings;
+        private int _highlightedZone = NoHighlightedZone;
+        private Tween _scrollTween;
+
+        private void OnDestroy()
         {
-            int nextZoneNumber = _items.Count + 1;
-            ZoneItemView newItem = Instantiate(itemPrefab, content);
-
-            WheelZoneType type = _getZoneType(nextZoneNumber);
-            newItem.Setup(nextZoneNumber, GetSpriteForZoneType(type));
-
-            _items.Add(newItem);
+            KillScrollTween();
         }
 
-        // 2. Bir önceki aktif kutuyu kendi doğal zone rengine geri çevir
-        if (_lastHighlightedZone > 0 && _lastHighlightedZone <= _items.Count)
+        public void Initialize(ZoneSettings zoneSettings)
         {
-            WheelZoneType prevType = _getZoneType(_lastHighlightedZone);
-            _items[_lastHighlightedZone - 1].Setup(_lastHighlightedZone, GetSpriteForZoneType(prevType));
+            _zoneSettings = zoneSettings;
         }
 
-        // 3. Yeni aktif zone kutusunu "current" (mavi) sprite ile işaretle
-        if (zone > 0 && zone <= _items.Count)
+        public void SetCurrentZone(int zone)
         {
-            _items[zone - 1].Setup(zone, currentZoneSprite);
-            _lastHighlightedZone = zone;
+            EnsureItemCount(zone + _zonesAhead);
+            RestoreHighlightedZone();
+            HighlightZone(zone);
+            ScrollToZone(zone);
         }
 
-        // Hedef X pozisyonunu hesaplama işlemi
-        float itemWidth = ((RectTransform)itemPrefab.transform).rect.width;
-        if (itemWidth <= 0f)
+        private void EnsureItemCount(int requiredCount)
         {
-            itemWidth = ((RectTransform)itemPrefab.transform).sizeDelta.x;
+            while (_items.Count < requiredCount)
+            {
+                int zoneNumber = _items.Count + 1;
+                ZoneItemView item = Instantiate(_itemPrefab, _content);
+                item.Setup(zoneNumber, GetZoneSprite(zoneNumber));
+                _items.Add(item);
+            }
         }
 
-        float spacing = layoutGroup != null ? layoutGroup.spacing : 10f;
-        float paddingLeft = layoutGroup != null ? layoutGroup.padding.left : 0f;
-
-        float boxCenterFromLeft = paddingLeft + ((zone - 1) * (itemWidth + spacing)) + (itemWidth * 0.5f);
-        float targetX = (viewport.rect.width * 0.5f) - boxCenterFromLeft;
-
-        // DOTween ile kaydır
-        content.DOKill();
-        content.DOAnchorPosX(targetX, scrollDuration).SetEase(Ease.OutCubic);
-    }
-
-    private Sprite GetSpriteForZoneType(WheelZoneType type)
-    {
-        switch (type)
+        private void RestoreHighlightedZone()
         {
-            case WheelZoneType.Super:
-                return superZoneSprite;
-            case WheelZoneType.Safe:
-                return safeZoneSprite;
-            case WheelZoneType.Normal:
-            default:
-                return normalZoneSprite;
+            if (_highlightedZone == NoHighlightedZone)
+            {
+                return;
+            }
+
+            _items[_highlightedZone - 1].Setup(_highlightedZone, GetZoneSprite(_highlightedZone));
+            _highlightedZone = NoHighlightedZone;
         }
-    }
 
-    private void OnDestroy()
-    {
-        if (content != null)
+        private void HighlightZone(int zone)
         {
-            content.DOKill();
+            _items[zone - 1].Setup(zone, _currentZoneSprite);
+            _highlightedZone = zone;
+        }
+
+        private void ScrollToZone(int zone)
+        {
+            RectTransform itemRect = (RectTransform)_itemPrefab.transform;
+            float itemWidth = itemRect.rect.width;
+            float step = itemWidth + _layoutGroup.spacing;
+            float itemCenter = _layoutGroup.padding.left + (zone - 1) * step + itemWidth * 0.5f;
+            float targetX = _viewport.rect.width * 0.5f - itemCenter;
+
+            KillScrollTween();
+
+            _scrollTween = _content
+                .DOAnchorPosX(targetX, _scrollDuration)
+                .SetEase(Ease.OutCubic)
+                .SetLink(gameObject);
+        }
+
+        private Sprite GetZoneSprite(int zone)
+        {
+            return _zoneSettings.GetZoneType(zone).ZoneBarSprite;
+        }
+
+        private void KillScrollTween()
+        {
+            if (_scrollTween != null)
+            {
+                _scrollTween.Kill();
+                _scrollTween = null;
+            }
         }
     }
 }

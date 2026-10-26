@@ -1,137 +1,135 @@
 using System;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
-using VertigoWheel.Data;
+using VertigoWheel.Core;
 
-public class WheelView : MonoBehaviour
+namespace VertigoWheel.Views
 {
-    [Header("Visual Elements")]
-    [SerializeField] private Image wheelBaseImage;
-    [SerializeField] private Image wheelIndicatorImage;
-    [SerializeField] private RectTransform wheelRotator;
-    [SerializeField] private Button spinButton;
+    public class WheelView : MonoBehaviour
+    {
+        private const float FullCircleDegrees = 360f;
 
-    [Header("Slices")]
-    [SerializeField] private WheelSliceView[] slices;
+        [Header("Visual Elements")]
+        [SerializeField, FormerlySerializedAs("wheelBaseImage")] private Image _baseImage;
+        [SerializeField, FormerlySerializedAs("wheelIndicatorImage")] private Image _indicatorImage;
+        [SerializeField, FormerlySerializedAs("wheelRotator")] private RectTransform _rotator;
+        [SerializeField, FormerlySerializedAs("spinButton")] private Button _spinButton;
+        [SerializeField] private Sprite _bombSprite;
 
-    [Header("Spin Settings")]
-    [SerializeField] private float spinDuration = 4f;
-    [SerializeField] private int fullRotations = 5;
-    [SerializeField] private Ease spinEase = Ease.OutQuart;
+        [Header("Slices")]
+        [SerializeField, FormerlySerializedAs("slices")] private WheelSliceView[] _sliceViews;
 
-    [Header("Debug / Testing")]
-    [SerializeField] private WheelConfig testConfig;
+        [Header("Spin Settings")]
+        [SerializeField, FormerlySerializedAs("spinDuration"), Min(0.1f)] private float _spinDuration = 4f;
+        [SerializeField, FormerlySerializedAs("fullRotations"), Range(1, 15)] private int _fullRotations = 5;
+        [SerializeField, FormerlySerializedAs("spinEase")] private Ease _spinEase = Ease.OutQuart;
 
-    private bool isSpinning;
+        private Tween _spinTween;
 
-    public bool IsSpinning => isSpinning;
-    public event Action SpinClicked;
+        public event Action SpinClicked;
+
+        public event Action SpinAnimationCompleted;
 
 #if UNITY_EDITOR
-    private void OnValidate()
-    {
-        slices = GetComponentsInChildren<WheelSliceView>(true);
-
-        if (spinButton == null)
+        private void OnValidate()
         {
-            spinButton = GetComponentInChildren<Button>(true);
+            _sliceViews = GetComponentsInChildren<WheelSliceView>(true);
+
+            if (!_spinButton)
+            {
+                _spinButton = GetComponentInChildren<Button>(true);
+            }
         }
-    }
 #endif
 
-    private void OnEnable()
-    {
-        if (spinButton != null)
+        private void OnEnable()
         {
-            spinButton.onClick.AddListener(OnSpinButtonClicked);
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (spinButton != null)
-        {
-            spinButton.onClick.RemoveListener(OnSpinButtonClicked);
-        }
-    }
-
-    private void OnSpinButtonClicked()
-    {
-        SpinClicked?.Invoke();
-    }
-
-    public void SetSpinInteractable(bool value)
-    {
-        if (spinButton != null)
-        {
-            spinButton.interactable = value;
-        }
-    }
-
-    /// <summary>
-    /// Çarkı ve dilimleri gelen konfigürasyona göre günceller.
-    /// amountCalculator: Her dilim için ekrana yazılacak miktarı döndürür.
-    /// </summary>
-    public void ApplyConfig(WheelConfig config, Func<WheelSliceData, int> amountCalculator = null)
-    {
-        if (config == null)
-        {
-            Debug.LogWarning($"[{nameof(WheelView)}] ApplyConfig çağrıldı ancak config null!");
-            return;
+            _spinButton.onClick.AddListener(HandleSpinButtonClicked);
         }
 
-        if (wheelBaseImage != null && config.WheelBaseSprite != null)
+        private void OnDisable()
         {
-            wheelBaseImage.sprite = config.WheelBaseSprite;
+            _spinButton.onClick.RemoveListener(HandleSpinButtonClicked);
         }
 
-        if (wheelIndicatorImage != null && config.WheelIndicatorSprite != null)
+        private void OnDestroy()
         {
-            wheelIndicatorImage.sprite = config.WheelIndicatorSprite;
+            KillSpinTween();
         }
 
-        int count = Mathf.Min(slices.Length, config.Slices.Count);
-        for (int i = 0; i < count; i++)
+        public void ShowWheel(RuntimeWheel wheel)
         {
-            var sliceData = config.Slices[i];
-            
-            // Fonksiyon verilmişse hesaplanmış miktarı al, verilmemişse config'teki temel sayıyı kullan
-            int displayAmount = amountCalculator != null ? amountCalculator(sliceData) : sliceData.Amount;
-            
-            slices[i].Setup(sliceData, displayAmount);
-        }
-    }
+            _baseImage.sprite = wheel.Config.BaseSprite;
+            _indicatorImage.sprite = wheel.Config.IndicatorSprite;
 
-    public void Spin(int targetSliceIndex, Action onComplete = null)
-    {
-        if (isSpinning) return;
+            int count = Mathf.Min(_sliceViews.Length, wheel.Slices.Count);
 
-        if (slices == null || slices.Length == 0)
-        {
-            Debug.LogError($"[{nameof(WheelView)}] Dilimler bulunamadı!");
-            return;
-        }
-
-        isSpinning = true;
-
-        float sliceAngle = 360f / slices.Length;
-        float targetAngle = targetSliceIndex * sliceAngle;
-        float totalRotation = (fullRotations * 360f) - targetAngle;
-
-        wheelRotator
-            .DOLocalRotate(new Vector3(0f, 0f, -totalRotation), spinDuration, RotateMode.FastBeyond360)
-            .SetEase(spinEase)
-            .OnComplete(() =>
+            for (int i = 0; i < count; i++)
             {
-                isSpinning = false;
-                onComplete?.Invoke();
-            });
-    }
+                WheelSlice slice = wheel.Slices[i];
 
-    [ContextMenu("Apply Test Config")]
-    private void ApplyTestConfig()
-    {
-        ApplyConfig(testConfig);
+                if (slice.IsBomb)
+                {
+                    _sliceViews[i].ShowBomb(_bombSprite);
+                }
+                else
+                {
+                    _sliceViews[i].ShowReward(slice.Reward.Icon, AmountFormatter.Format(slice.Amount));
+                }
+            }
+        }
+
+        public void PlaySpin(int targetSliceIndex)
+        {
+            float sliceAngle = FullCircleDegrees / _sliceViews.Length;
+            float targetAngle = targetSliceIndex * sliceAngle;
+            float totalRotation = _fullRotations * FullCircleDegrees - targetAngle;
+
+            KillSpinTween();
+
+            _spinTween = _rotator
+                .DOLocalRotate(new Vector3(0f, 0f, -totalRotation), _spinDuration, RotateMode.FastBeyond360)
+                .SetEase(_spinEase)
+                .SetLink(gameObject)
+                .OnComplete(HandleSpinTweenCompleted);
+        }
+
+        public void SetSpinInteractable(bool isInteractable)
+        {
+            _spinButton.interactable = isInteractable;
+        }
+
+        private void HandleSpinButtonClicked()
+        {
+            Action handler = SpinClicked;
+
+            if (handler != null)
+            {
+                handler.Invoke();
+            }
+        }
+
+        private void HandleSpinTweenCompleted()
+        {
+            _spinTween = null;
+
+            Action handler = SpinAnimationCompleted;
+
+            if (handler != null)
+            {
+                handler.Invoke();
+            }
+        }
+
+        private void KillSpinTween()
+        {
+            if (_spinTween != null)
+            {
+                _spinTween.Kill();
+                _spinTween = null;
+            }
+        }
     }
 }

@@ -1,46 +1,41 @@
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
-using VertigoWheel.Data;
+using UnityEngine;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
 
-public class WheelSliceView : MonoBehaviour
+namespace VertigoWheel.Views
 {
-    [SerializeField] private Image iconImage;
-    [SerializeField] private TMP_Text amountText;
+    public class WheelSliceView : MonoBehaviour
+    {
+        [SerializeField, FormerlySerializedAs("iconImage")] private Image _iconImage;
+        [SerializeField, FormerlySerializedAs("amountText")] private TMP_Text _amountText;
 
 #if UNITY_EDITOR
-    private void OnValidate()
-    {
-        if (iconImage == null)
+        private void OnValidate()
         {
-            iconImage = GetComponentInChildren<Image>();
-        }
+            if (!_iconImage)
+            {
+                _iconImage = GetComponentInChildren<Image>(true);
+            }
 
-        if (amountText == null)
-        {
-            amountText = GetComponentInChildren<TMP_Text>();
+            if (!_amountText)
+            {
+                _amountText = GetComponentInChildren<TMP_Text>(true);
+            }
         }
-    }
 #endif
 
-    public void Setup(WheelSliceData sliceData, int displayAmount)
-    {
-        
-        if (sliceData == null || sliceData.Data == null)
+        public void ShowReward(Sprite icon, string amountLabel)
         {
-            return;
+            _iconImage.sprite = icon;
+            _amountText.text = amountLabel;
+            _amountText.gameObject.SetActive(true);
         }
 
-        iconImage.sprite = sliceData.Data.Icon;
-
-        if (sliceData.IsBomb)
+        public void ShowBomb(Sprite bombIcon)
         {
-            amountText.gameObject.SetActive(false);
-        }
-        else
-        {
-            amountText.gameObject.SetActive(true);
-            amountText.text = "x" + displayAmount;
+            _iconImage.sprite = bombIcon;
+            _amountText.gameObject.SetActive(false);
         }
     }
 }

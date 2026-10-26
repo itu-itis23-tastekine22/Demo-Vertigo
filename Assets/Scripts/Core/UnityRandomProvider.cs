@@ -1,9 +1,12 @@
 using UnityEngine;
 
-public class UnityRandomProvider : IRandomProvider
+namespace VertigoWheel.Core
 {
-    public int Range(int minInclusive, int maxExclusive)
+    public sealed class UnityRandomProvider : IRandomProvider
     {
-        return Random.Range(minInclusive, maxExclusive);
+        public int Range(int minInclusive, int maxExclusive)
+        {
+            return Random.Range(minInclusive, maxExclusive);
+        }
     }
 }

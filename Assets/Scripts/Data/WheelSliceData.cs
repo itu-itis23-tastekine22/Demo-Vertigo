@@ -25,9 +25,6 @@ namespace VertigoWheel.Data
             get { return _data == null; }
         }
 
-        public bool IsBomb
-        {
-            get { return !IsEmpty && _data.IsBomb; }
-        }
+
     }
 }
