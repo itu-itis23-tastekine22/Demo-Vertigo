@@ -1,46 +1,34 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
-using VertigoWheel.Data;
-using VertigoWheel.Views;
 
-public class RewardItemView : MonoBehaviour
+namespace VertigoWheel.Views
 {
-    [Header("UI Elements")]
-    [SerializeField] private Image iconImage;
-    [SerializeField] private TMP_Text amountText;
+    public class RewardItemView : MonoBehaviour
+    {
+        [SerializeField, FormerlySerializedAs("iconImage")] private Image _iconImage;
+        [SerializeField, FormerlySerializedAs("amountText")] private TMP_Text _amountText;
 
 #if UNITY_EDITOR
-    private void OnValidate()
-    {
-        if (iconImage == null)
+        private void OnValidate()
         {
-            iconImage = GetComponentInChildren<Image>(true);
-        }
+            if (!_iconImage)
+            {
+                _iconImage = GetComponentInChildren<Image>(true);
+            }
 
-        if (amountText == null)
-        {
-            amountText = GetComponentInChildren<TMP_Text>(true);
+            if (!_amountText)
+            {
+                _amountText = GetComponentInChildren<TMP_Text>(true);
+            }
         }
-    }
 #endif
 
-    public void Setup(RewardData reward, int amount)
-    {
-        if (reward == null)
+        public void Show(Sprite icon, int amount)
         {
-            Debug.LogWarning($"[{nameof(RewardItemView)}] Gelen RewardData null!");
-            return;
-        }
-
-        if (iconImage != null && reward.Icon != null)
-        {
-            iconImage.sprite = reward.Icon;
-        }
-
-        if (amountText != null)
-        {
-            amountText.text = AmountFormatter.Format(amount);
+            _iconImage.sprite = icon;
+            _amountText.text = AmountFormatter.Format(amount);
         }
     }
 }

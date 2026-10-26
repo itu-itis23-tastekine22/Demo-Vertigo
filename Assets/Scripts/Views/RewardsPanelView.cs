@@ -1,87 +1,61 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
-using VertigoWheel.Data;
 
-public class RewardsPanelView : MonoBehaviour
+namespace VertigoWheel.Views
 {
-    [Header("List Container & Prefab")]
-    [SerializeField] private RectTransform content;
-    [SerializeField] private RewardItemView itemPrefab;
-
-    [Header("Buttons")]
-    [SerializeField] private Button leaveButton;
-
-    private readonly Dictionary<RewardData, RewardItemView> itemViews = new Dictionary<RewardData, RewardItemView>();
-
-    public event Action LeaveClicked;
-
-    private void OnValidate()
+    public class RewardsPanelView : MonoBehaviour
     {
-        if (leaveButton == null)
+        [SerializeField] private RewardListView _rewardList;
+        [SerializeField, FormerlySerializedAs("leaveButton")] private Button _leaveButton;
+
+        public event Action LeaveClicked;
+
+#if UNITY_EDITOR
+        private void OnValidate()
         {
-            leaveButton = GetComponentInChildren<Button>();
-        }
-    }
-
-    private void OnEnable()
-    {
-        if (leaveButton != null)
-        {
-            leaveButton.onClick.AddListener(OnLeaveButtonClicked);
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (leaveButton != null)
-        {
-            leaveButton.onClick.RemoveListener(OnLeaveButtonClicked);
-        }
-    }
-
-    private void OnLeaveButtonClicked()
-    {
-        LeaveClicked?.Invoke();
-    }
-
-    public void SetLeaveInteractable(bool value)
-    {
-        if (leaveButton != null)
-        {
-            leaveButton.interactable = value;
-        }
-    }
-
-    public void Refresh(IReadOnlyDictionary<RewardData, int> items)
-    {
-        if (items == null || items.Count == 0)
-        {
-            foreach (var view in itemViews.Values)
+            if (!_rewardList)
             {
-                if (view != null)
-                {
-                    Destroy(view.gameObject);
-                }
+                _rewardList = GetComponentInChildren<RewardListView>(true);
             }
 
-            itemViews.Clear();
-            return;
+            if (!_leaveButton)
+            {
+                _leaveButton = GetComponentInChildren<Button>(true);
+            }
+        }
+#endif
+
+        private void OnEnable()
+        {
+            _leaveButton.onClick.AddListener(HandleLeaveButtonClicked);
         }
 
-        foreach (var pair in items)
+        private void OnDisable()
         {
-            RewardData reward = pair.Key;
-            int amount = pair.Value;
+            _leaveButton.onClick.RemoveListener(HandleLeaveButtonClicked);
+        }
 
-            if (!itemViews.TryGetValue(reward, out var view))
+        public void ShowRewards(IReadOnlyList<RewardListEntry> entries)
+        {
+            _rewardList.Show(entries);
+        }
+
+        public void SetLeaveInteractable(bool isInteractable)
+        {
+            _leaveButton.interactable = isInteractable;
+        }
+
+        private void HandleLeaveButtonClicked()
+        {
+            Action handler = LeaveClicked;
+
+            if (handler != null)
             {
-                view = Instantiate(itemPrefab, content);
-                itemViews.Add(reward, view);
+                handler.Invoke();
             }
-
-            view.Setup(reward, amount);
         }
     }
 }
