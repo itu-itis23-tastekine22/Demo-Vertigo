@@ -1,84 +1,85 @@
-using System;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
+using VertigoWheel.Events;
 
-public class BombPopupView : MonoBehaviour
+namespace VertigoWheel.Views
 {
-    [Header("UI Elements")]
-    [SerializeField] private Button giveUpButton;
-    [SerializeField] private RectTransform popupRoot;
+    public class BombPopupView : MonoBehaviour
+    {
+        [Header("UI Elements")]
+        [SerializeField, FormerlySerializedAs("giveUpButton")] private Button _giveUpButton;
+        [SerializeField, FormerlySerializedAs("popupRoot")] private RectTransform _popupRoot;
 
-    [Header("Animation Settings")]
-    [SerializeField] private float showDuration = 0.3f;
+        [Header("Animation Settings")]
+        [SerializeField, FormerlySerializedAs("showDuration"), Min(0f)] private float _showDuration = 0.3f;
 
-    public event Action GiveUpClicked;
+        private IEventBus _eventBus;
+        private Tween _showTween;
 
 #if UNITY_EDITOR
-    private void OnValidate()
-    {
-        // true parametresi panel inaktif olsa dahi child objelerdeki butonu bulmasını sağlar
-        if (giveUpButton == null)
+        private void OnValidate()
         {
-            giveUpButton = GetComponentInChildren<Button>(true);
+            if (!_giveUpButton)
+            {
+                _giveUpButton = GetComponentInChildren<Button>(true);
+            }
         }
-    }
 #endif
 
-    private void OnEnable()
-    {
-        if (giveUpButton != null)
+        private void OnEnable()
         {
-            giveUpButton.onClick.AddListener(OnGiveUpButtonClicked);
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (giveUpButton != null)
-        {
-            giveUpButton.onClick.RemoveListener(OnGiveUpButtonClicked);
-        }
-    }
-
-    private void OnGiveUpButtonClicked()
-    {
-        GiveUpClicked?.Invoke();
-    }
-
-    /// <summary>
-    /// Paneli aktif eder.
-    /// </summary>
-    public void Show()
-    {
-        gameObject.SetActive(true);
-
-        if (popupRoot != null)
-        {
-            popupRoot.DOKill();
-            popupRoot.localScale = Vector3.zero;
-            popupRoot.DOScale(1f, showDuration).SetEase(Ease.OutBack);
-        }
-    }
-
-    /// <summary>
-    /// Paneli kapatır.
-    /// </summary>
-    public void Hide()
-    {
-        if (popupRoot != null)
-        {
-            popupRoot.DOKill();
+            _giveUpButton.onClick.AddListener(HandleGiveUpButtonClicked);
         }
 
-        gameObject.SetActive(false);
-    }
-
-    private void OnDestroy()
-    {
-        if (popupRoot != null)
+        private void OnDisable()
         {
-            popupRoot.DOKill();
+            _giveUpButton.onClick.RemoveListener(HandleGiveUpButtonClicked);
+        }
+
+        private void OnDestroy()
+        {
+            KillShowTween();
+        }
+
+        public void Initialize(IEventBus eventBus)
+        {
+            _eventBus = eventBus;
+        }
+
+        public void Show()
+        {
+            gameObject.SetActive(true);
+
+            transform.SetAsLastSibling();
+            KillShowTween();
+
+            _popupRoot.localScale = Vector3.zero;
+            _showTween = _popupRoot
+                .DOScale(1f, _showDuration)
+                .SetEase(Ease.OutBack)
+                .SetLink(gameObject);
+        }
+
+        public void Hide()
+        {
+            KillShowTween();
+            gameObject.SetActive(false);
+        }
+
+        private void HandleGiveUpButtonClicked()
+        {
+            _eventBus.Publish(new GiveUpRequestedEvent());
+        }
+
+        private void KillShowTween()
+        {
+            if (_showTween != null)
+            {
+                _showTween.Kill();
+                _showTween = null;
+            }
         }
     }
 }

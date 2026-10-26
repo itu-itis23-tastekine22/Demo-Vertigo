@@ -1,28 +1,29 @@
 using System;
 
-public class SpinResolver
+namespace VertigoWheel.Core
 {
-    private readonly IRandomProvider _randomProvider;
-    public SpinResolver(IRandomProvider randomProvider)
+    public sealed class SpinResolver
     {
-        _randomProvider = randomProvider ?? throw new ArgumentNullException(nameof(randomProvider));
-    }
+        private readonly IRandomProvider _randomProvider;
 
-    /// <summary>
-    /// Çarkın dilim sayısına göre rastgele bir dilim indeksi (0 ile SliceCount - 1 arası) belirler.
-    /// </summary>
-    public int ResolveSliceIndex(WheelConfig config)
-    {
-        if (config == null) throw new ArgumentNullException(nameof(config));
-
-
-        int sliceCount = config.Slices.Count;
-
-        if (sliceCount <= 0)
+        public SpinResolver(IRandomProvider randomProvider)
         {
-            throw new InvalidOperationException("WheelConfig içerisinde en az 1 dilim bulunmalıdır.");
+            if (randomProvider == null)
+            {
+                throw new ArgumentNullException(nameof(randomProvider));
+            }
+
+            _randomProvider = randomProvider;
         }
 
-        return _randomProvider.Range(0, sliceCount);
+        public int ResolveSliceIndex(int sliceCount)
+        {
+            if (sliceCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(sliceCount), "A wheel needs at least one slice.");
+            }
+
+            return _randomProvider.Range(0, sliceCount);
+        }
     }
 }

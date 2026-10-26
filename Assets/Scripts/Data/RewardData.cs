@@ -1,56 +1,46 @@
-using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
-public enum RewardType
+namespace VertigoWheel.Data
 {
-    Bomb,
-    Cash,
-    Gold,
-    WeaponPoints,
-    Armor,
-    Consumable,
-    Chest,
-    Weapon,     // YENİ
-    Cosmetic    // YENİ
-}
+    [CreateAssetMenu(fileName = "Reward_New", menuName = "Wheel Game/Reward Data")]
+    public class RewardData : ScriptableObject
+    {
+        [Header("Definition")]
+        [SerializeField, FormerlySerializedAs("displayName")] private string _displayName;
+        [SerializeField, FormerlySerializedAs("rewardType")] private RewardType _rewardType;
 
-[CreateAssetMenu(fileName = "Reward_New", menuName = "Wheel Game/Reward Data")]
-public class RewardData : ScriptableObject
-{
-    [Header("Reward Definition")]
-    
-    [SerializeField] private string displayName;
-    [SerializeField] private RewardType rewardType;
+        [Header("Visual")]
+        [SerializeField, FormerlySerializedAs("icon")] private Sprite _icon;
 
-    [Header("Visual")]
-    [SerializeField] private Sprite icon;
-    [SerializeField] private bool scalesWithZone = true;
-    public bool ScalesWithZone => scalesWithZone;
+        [Header("Progression")]
+        [Tooltip("Stackable rewards grow with the zone multiplier. Single items such as weapons, cosmetics and chests must stay off.")]
+        [SerializeField, FormerlySerializedAs("scalesWithZone")] private bool _isScaledByZone;
 
-    
-    public string DisplayName => displayName;
-    public RewardType Type => rewardType;
-    public Sprite Icon => icon;
+        public string DisplayName
+        {
+            get { return _displayName; }
+        }
 
-    //Bomba Kontrolü
-    public bool IsBomb => rewardType == RewardType.Bomb;
+        public RewardType Type
+        {
+            get { return _rewardType; }
+        }
+
+        public Sprite Icon
+        {
+            get { return _icon; }
+        }
+
+        public bool IsScaledByZone
+        {
+            get { return _isScaledByZone; }
+        }
+        public string Id
+        {
+            get { return name; }
+        }
 
 
-}
-
-/// <summary>
-/// Çark dilimlerinde veya kazanılan envanter listesinde ödül verileriyle miktari eşleme
-/// </summary>
-
-[Serializable]
-public class WheelSliceData
-{
-    [SerializeField] private RewardData data;     
-    [SerializeField] private int amount;          
-
-    public RewardData Data => data;               
-    public int Amount => amount;                  
-
-    public bool IsEmpty => data == null;
-    public bool IsBomb => data != null && data.IsBomb;
+    }
 }

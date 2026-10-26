@@ -1,66 +1,51 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
-[CreateAssetMenu(fileName = "ZoneSettings", menuName = "Wheel Game/Zone Settings")]
-public class ZoneSettings : ScriptableObject
+namespace VertigoWheel.Data
 {
-    [Header("Interval Settings")]
-    [SerializeField, Min(1)] private int safeZoneInterval = 5;
-    [SerializeField, Min(1)] private int superZoneInterval = 30;
-
-    [Header("Wheel Configurations")]
-    [SerializeField] private WheelConfig normalWheel;
-    [SerializeField] private WheelConfig safeWheel;
-    [SerializeField] private WheelConfig superWheel;
-
-    [Header("Reward Scaling")]
-    [SerializeField, Min(0f)] private float rewardIncreaseRate = 0.1f;
-
-    /// <summary>
-    /// Verilen zone indeksine göre bölge türünü belirler.
-    /// </summary>
-    public WheelZoneType GetZoneType(int zone)
+    [CreateAssetMenu(fileName = "ZoneSettings", menuName = "Wheel Game/Zone Settings")]
+    public class ZoneSettings : ScriptableObject
     {
-        if (zone > 0 && zone % superZoneInterval == 0)
+        [Header("Zone Types")]
+        [SerializeField] private List<ZoneTypeData> _zoneTypes = new List<ZoneTypeData>();
+
+        [Header("Reward Scaling")]
+        [Tooltip("Multiplier added per zone for rewards that scale with the zone.")]
+        [SerializeField, FormerlySerializedAs("rewardIncreaseRate"), Min(0f)] private float _rewardIncreaseRate = 0.1f;
+
+        public ZoneTypeData GetZoneType(int zone)
         {
-            return WheelZoneType.Super;
+            ZoneTypeData selectedType = null;
+
+            for (int i = 0; i < _zoneTypes.Count; i++)
+            {
+                ZoneTypeData zoneType = _zoneTypes[i];
+
+                if (!zoneType || !zoneType.Matches(zone))
+                {
+                    continue;
+                }
+
+                if (!selectedType || zoneType.Priority > selectedType.Priority)
+                {
+                    selectedType = zoneType;
+                }
+            }
+
+            if (!selectedType)
+            {
+                throw new InvalidOperationException($"No zone type matches zone {zone}. Add a zone type with interval 1.");
+            }
+
+            return selectedType;
         }
 
-        if (zone > 0 && zone % safeZoneInterval == 0)
+        public int GetScaledAmount(int baseAmount, int zone)
         {
-            return WheelZoneType.Safe;
+            float multiplier = 1f + (zone - 1) * _rewardIncreaseRate;
+            return Mathf.RoundToInt(baseAmount * multiplier);
         }
-
-        return WheelZoneType.Normal;
-    }
-
-    /// <summary>
-    /// Zone türüne karşılık gelen WheelConfig referansını döner.
-    /// </summary>
-    public WheelConfig GetWheelConfig(int zone)
-    {
-        WheelZoneType zoneType = GetZoneType(zone);
-
-        switch (zoneType)
-        {
-            case WheelZoneType.Super:
-                return superWheel;
-
-            case WheelZoneType.Safe:
-                return safeWheel;
-
-            case WheelZoneType.Normal:
-            default:
-                return normalWheel;
-        }
-    }
-
-    /// <summary>
-    /// Zone seviyesine göre temel ödül miktarını ölçeklendirir.
-    /// Formül: baseAmount * (1 + (zone - 1) * rewardIncreaseRate)
-    /// </summary>
-    public int GetScaledAmount(int baseAmount, int zone)
-    {
-        float multiplier = 1f + (zone - 1) * rewardIncreaseRate;
-        return Mathf.RoundToInt(baseAmount * multiplier);
     }
 }

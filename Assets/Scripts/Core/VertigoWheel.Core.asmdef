@@ -1,0 +1,16 @@
+{
+    "name": "VertigoWheel.Core",
+    "rootNamespace": "",
+    "references": [
+        "GUID:8f32b748e448d42309e8dddd1927f78a"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

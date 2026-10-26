@@ -1,0 +1,19 @@
+{
+    "name": "VertigoWheel.Controllers",
+    "rootNamespace": "",
+    "references": [
+        "GUID:29c92cb5405324544bbb1de2fff280e9",
+        "GUID:8f32b748e448d42309e8dddd1927f78a",
+        "GUID:c4753650885744acfa864455e74c3926",
+        "GUID:4bc9d4f94bd854fd089e5628cff1328c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,16 @@
+{
+    "name": "VertigoWheel.Infrastructure",
+    "rootNamespace": "",
+    "references": [
+        "GUID:29c92cb5405324544bbb1de2fff280e9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
