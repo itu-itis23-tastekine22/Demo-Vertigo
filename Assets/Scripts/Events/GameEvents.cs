@@ -35,7 +35,24 @@ namespace VertigoWheel.Events
     public readonly struct RunInventoryChangedEvent
     {
     }
+
     public readonly struct WalletChangedEvent
+    {
+    }
+
+    public readonly struct SpinRequestedEvent
+    {
+    }
+
+    public readonly struct SpinAnimationCompletedEvent
+    {
+    }
+
+    public readonly struct LeaveRequestedEvent
+    {
+    }
+
+    public readonly struct GiveUpRequestedEvent
     {
     }
 }

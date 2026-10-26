@@ -1,11 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using VertigoWheel.Core;
 using VertigoWheel.Data;
 using VertigoWheel.Events;
-using VertigoWheel.Views;
 using VertigoWheel.Infrastructure;
-using System.Collections.Generic;
+using VertigoWheel.Views;
 
 namespace VertigoWheel.Controllers
 {
@@ -36,47 +36,37 @@ namespace VertigoWheel.Controllers
             WheelBuilder wheelBuilder = new WheelBuilder(_zoneSettings, randomProvider);
             SpinResolver spinResolver = new SpinResolver(randomProvider);
             IWalletStorage walletStorage = new PlayerPrefsWalletStorage();
-            IWallet wallet = new Wallet(walletStorage, _eventBus);
 
             _wallet = new Wallet(walletStorage, _eventBus);
             _session = new GameSession(wheelBuilder, spinResolver, inventory, _wallet, _eventBus);
+
+            _wheelView.Initialize(_eventBus);
+            _rewardsPanelView.Initialize(_eventBus);
+            _bombPopupView.Initialize(_eventBus);
         }
 
         private void OnEnable()
         {
+            _eventBus.Subscribe<SpinRequestedEvent>(HandleSpinRequested);
+            _eventBus.Subscribe<SpinAnimationCompletedEvent>(HandleSpinAnimationCompleted);
+            _eventBus.Subscribe<LeaveRequestedEvent>(HandleLeaveRequested);
+            _eventBus.Subscribe<GiveUpRequestedEvent>(HandleGiveUpRequested);
             _eventBus.Subscribe<ZoneChangedEvent>(HandleZoneChanged);
             _eventBus.Subscribe<RunStateChangedEvent>(HandleRunStateChanged);
             _eventBus.Subscribe<RunInventoryChangedEvent>(HandleInventoryChanged);
             _eventBus.Subscribe<WalletChangedEvent>(HandleWalletChanged);
-
-            _wheelView.SpinClicked += HandleSpinClicked;
-            _wheelView.SpinAnimationCompleted += HandleSpinAnimationCompleted;
-            _rewardsPanelView.LeaveClicked += HandleLeaveClicked;
-            _bombPopupView.GiveUpClicked += HandleGiveUpClicked;
         }
 
         private void OnDisable()
         {
+            _eventBus.Unsubscribe<SpinRequestedEvent>(HandleSpinRequested);
+            _eventBus.Unsubscribe<SpinAnimationCompletedEvent>(HandleSpinAnimationCompleted);
+            _eventBus.Unsubscribe<LeaveRequestedEvent>(HandleLeaveRequested);
+            _eventBus.Unsubscribe<GiveUpRequestedEvent>(HandleGiveUpRequested);
             _eventBus.Unsubscribe<ZoneChangedEvent>(HandleZoneChanged);
             _eventBus.Unsubscribe<RunStateChangedEvent>(HandleRunStateChanged);
             _eventBus.Unsubscribe<RunInventoryChangedEvent>(HandleInventoryChanged);
             _eventBus.Unsubscribe<WalletChangedEvent>(HandleWalletChanged);
-
-            if (_wheelView)
-            {
-                _wheelView.SpinClicked -= HandleSpinClicked;
-                _wheelView.SpinAnimationCompleted -= HandleSpinAnimationCompleted;
-            }
-
-            if (_rewardsPanelView)
-            {
-                _rewardsPanelView.LeaveClicked -= HandleLeaveClicked;
-            }
-
-            if (_bombPopupView)
-            {
-                _bombPopupView.GiveUpClicked -= HandleGiveUpClicked;
-            }
         }
 
         private void Start()
@@ -87,7 +77,7 @@ namespace VertigoWheel.Controllers
             _session.StartNewRun();
         }
 
-        private void HandleSpinClicked()
+        private void HandleSpinRequested(SpinRequestedEvent spinRequested)
         {
             if (_session.TryStartSpin(out int sliceIndex))
             {
@@ -95,12 +85,12 @@ namespace VertigoWheel.Controllers
             }
         }
 
-        private void HandleSpinAnimationCompleted()
+        private void HandleSpinAnimationCompleted(SpinAnimationCompletedEvent spinCompleted)
         {
             _session.CompleteSpin();
         }
 
-        private void HandleLeaveClicked()
+        private void HandleLeaveRequested(LeaveRequestedEvent leaveRequested)
         {
             if (_session.TryLeave())
             {
@@ -108,7 +98,7 @@ namespace VertigoWheel.Controllers
             }
         }
 
-        private void HandleGiveUpClicked()
+        private void HandleGiveUpRequested(GiveUpRequestedEvent giveUpRequested)
         {
             _bombPopupView.Hide();
             _session.StartNewRun();

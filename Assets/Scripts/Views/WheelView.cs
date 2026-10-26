@@ -1,4 +1,4 @@
-using System;
+using VertigoWheel.Events;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -28,9 +28,7 @@ namespace VertigoWheel.Views
 
         private Tween _spinTween;
 
-        public event Action SpinClicked;
-
-        public event Action SpinAnimationCompleted;
+        private IEventBus _eventBus;
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -57,6 +55,11 @@ namespace VertigoWheel.Views
         private void OnDestroy()
         {
             KillSpinTween();
+        }
+
+        public void Initialize(IEventBus eventBus)
+        {
+            _eventBus = eventBus;
         }
 
         public void ShowWheel(RuntimeWheel wheel)
@@ -103,24 +106,13 @@ namespace VertigoWheel.Views
 
         private void HandleSpinButtonClicked()
         {
-            Action handler = SpinClicked;
-
-            if (handler != null)
-            {
-                handler.Invoke();
-            }
+            _eventBus.Publish(new SpinRequestedEvent());
         }
 
         private void HandleSpinTweenCompleted()
         {
             _spinTween = null;
-
-            Action handler = SpinAnimationCompleted;
-
-            if (handler != null)
-            {
-                handler.Invoke();
-            }
+            _eventBus.Publish(new SpinAnimationCompletedEvent());
         }
 
         private void KillSpinTween()

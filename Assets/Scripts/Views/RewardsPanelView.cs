@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using VertigoWheel.Events;
 
 namespace VertigoWheel.Views
 {
@@ -11,7 +11,7 @@ namespace VertigoWheel.Views
         [SerializeField] private RewardListView _rewardList;
         [SerializeField, FormerlySerializedAs("leaveButton")] private Button _leaveButton;
 
-        public event Action LeaveClicked;
+        private IEventBus _eventBus;
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -38,6 +38,11 @@ namespace VertigoWheel.Views
             _leaveButton.onClick.RemoveListener(HandleLeaveButtonClicked);
         }
 
+        public void Initialize(IEventBus eventBus)
+        {
+            _eventBus = eventBus;
+        }
+
         public void ShowRewards(IReadOnlyList<RewardListEntry> entries)
         {
             _rewardList.Show(entries);
@@ -50,12 +55,7 @@ namespace VertigoWheel.Views
 
         private void HandleLeaveButtonClicked()
         {
-            Action handler = LeaveClicked;
-
-            if (handler != null)
-            {
-                handler.Invoke();
-            }
+            _eventBus.Publish(new LeaveRequestedEvent());
         }
     }
 }
