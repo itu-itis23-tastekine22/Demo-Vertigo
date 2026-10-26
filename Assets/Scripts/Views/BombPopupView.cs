@@ -51,6 +51,8 @@ namespace VertigoWheel.Views
         public void Show()
         {
             gameObject.SetActive(true);
+
+            transform.SetAsLastSibling();
             KillShowTween();
 
             _popupRoot.localScale = Vector3.zero;
