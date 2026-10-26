@@ -4,6 +4,7 @@ using VertigoWheel.Core;
 using VertigoWheel.Data;
 using VertigoWheel.Events;
 using VertigoWheel.Views;
+using VertigoWheel.Infrastructure;
 
 namespace VertigoWheel.Controllers
 {
@@ -29,8 +30,10 @@ namespace VertigoWheel.Controllers
             RewardInventory inventory = new RewardInventory(_eventBus);
             WheelBuilder wheelBuilder = new WheelBuilder(_zoneSettings, randomProvider);
             SpinResolver spinResolver = new SpinResolver(randomProvider);
+            IWalletStorage walletStorage = new PlayerPrefsWalletStorage();
+            IWallet wallet = new Wallet(walletStorage, _eventBus);
 
-            _session = new GameSession(wheelBuilder, spinResolver, inventory, _eventBus);
+            _session = new GameSession(wheelBuilder, spinResolver, inventory, wallet, _eventBus);
         }
 
         private void OnEnable()

@@ -1,5 +1,7 @@
 using System;
 using VertigoWheel.Events;
+using System.Collections.Generic;
+using VertigoWheel.Data;
 
 namespace VertigoWheel.Core
 {
@@ -12,13 +14,14 @@ namespace VertigoWheel.Core
         private readonly SpinResolver _spinResolver;
         private readonly RewardInventory _inventory;
         private readonly IEventBus _eventBus;
+        private readonly IWallet _wallet;
 
         private int _currentZone;
         private RunState _state;
         private RuntimeWheel _currentWheel;
         private int _pendingSliceIndex = NoPendingSlice;
 
-        public GameSession(WheelBuilder wheelBuilder, SpinResolver spinResolver, RewardInventory inventory, IEventBus eventBus)
+        public GameSession(WheelBuilder wheelBuilder, SpinResolver spinResolver, RewardInventory inventory, IWallet wallet, IEventBus eventBus)
         {
             if (wheelBuilder == null)
             {
@@ -35,6 +38,11 @@ namespace VertigoWheel.Core
                 throw new ArgumentNullException(nameof(inventory));
             }
 
+            if (wallet == null)
+            {
+                throw new ArgumentNullException(nameof(wallet));
+            }
+
             if (eventBus == null)
             {
                 throw new ArgumentNullException(nameof(eventBus));
@@ -43,6 +51,7 @@ namespace VertigoWheel.Core
             _wheelBuilder = wheelBuilder;
             _spinResolver = spinResolver;
             _inventory = inventory;
+            _wallet = wallet;
             _eventBus = eventBus;
         }
 
@@ -120,14 +129,28 @@ namespace VertigoWheel.Core
         }
 
         public bool TryLeave()
-        {
+{
             if (!CanLeave)
             {
                 return false;
             }
 
+            BankRunRewards();
+            _inventory.Clear();
             SetState(RunState.Left);
             return true;
+        }
+
+        private void BankRunRewards()
+        {
+            List<KeyValuePair<string, int>> deposits = new List<KeyValuePair<string, int>>(_inventory.Items.Count);
+
+            foreach (KeyValuePair<RewardData, int> item in _inventory.Items)
+            {
+                deposits.Add(new KeyValuePair<string, int>(item.Key.Id, item.Value));
+            }
+
+            _wallet.DepositAll(deposits);
         }
 
         private void EndRunWithBomb()

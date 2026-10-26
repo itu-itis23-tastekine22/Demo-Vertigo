@@ -36,6 +36,10 @@ namespace VertigoWheel.Data
         {
             get { return _isScaledByZone; }
         }
+        public string Id
+        {
+            get { return name; }
+        }
 
 
     }
