@@ -408,16 +408,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 745761ca4c5ed4b57a3cb55ba1d3b95a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  viewport: {fileID: 347264236}
-  content: {fileID: 409207706}
-  itemPrefab: {fileID: 340881855964014411, guid: 1335898ca1e8a4b978daefbb184c1726, type: 3}
-  layoutGroup: {fileID: 409207708}
-  normalZoneSprite: {fileID: 21300000, guid: 4f91f656b19264b4f8a1e46f20d096d1, type: 3}
-  safeZoneSprite: {fileID: 21300000, guid: e39ce31b122f74fe993fc03cf34da767, type: 3}
-  superZoneSprite: {fileID: 21300000, guid: 83e1eea7fabd443a2994627834725b18, type: 3}
-  currentZoneSprite: {fileID: 21300000, guid: 86f2fc940041c4919822fcee72f12307, type: 3}
-  zonesAhead: 15
-  scrollDuration: 0.3
+  _viewport: {fileID: 347264236}
+  _content: {fileID: 409207706}
+  _itemPrefab: {fileID: 340881855964014411, guid: 1335898ca1e8a4b978daefbb184c1726, type: 3}
+  _layoutGroup: {fileID: 409207708}
+  _currentZoneSprite: {fileID: 21300000, guid: 86f2fc940041c4919822fcee72f12307, type: 3}
+  _zonesAhead: 15
+  _scrollDuration: 0.3
 --- !u!1 &236891982
 GameObject:
   m_ObjectHideFlags: 0
@@ -1401,11 +1398,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 753d64f6ef6354cc18bc8da8d39823ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wheelBaseImage: {fileID: 1716634662}
-  wheelIndicatorImage: {fileID: 1596584391}
-  wheelRotator: {fileID: 698353704}
-  spinButton: {fileID: 294373049}
-  slices:
+  _baseImage: {fileID: 1716634662}
+  _indicatorImage: {fileID: 1596584391}
+  _rotator: {fileID: 698353704}
+  _spinButton: {fileID: 294373049}
+  _bombSprite: {fileID: 21300000, guid: f4903febe83e74201951b688c5e20b92, type: 3}
+  _sliceViews:
   - {fileID: 2421462444387743070}
   - {fileID: 1918402519}
   - {fileID: 2006967464}
@@ -1414,10 +1412,9 @@ MonoBehaviour:
   - {fileID: 1715240905}
   - {fileID: 1819497444}
   - {fileID: 1460573816}
-  spinDuration: 4
-  fullRotations: 5
-  spinEase: 12
-  testConfig: {fileID: 11400000, guid: 2370903c03fb8496b8b779eca9cac1a8, type: 2}
+  _spinDuration: 4
+  _fullRotations: 5
+  _spinEase: 12
 --- !u!1 &698353703
 GameObject:
   m_ObjectHideFlags: 0
@@ -1563,11 +1560,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a9d8c98f2db842babf6dcd22935b8bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  zoneSettings: {fileID: 11400000, guid: cc4fe2ef74b1d4e0cad3915ad161b873, type: 2}
-  wheelView: {fileID: 642037569}
-  rewardsPanelView: {fileID: 1680203524}
-  zoneBarView: {fileID: 104801010}
-  bombPopupView: {fileID: 1600739664}
+  _zoneSettings: {fileID: 11400000, guid: cc4fe2ef74b1d4e0cad3915ad161b873, type: 2}
+  _wheelView: {fileID: 642037569}
+  _rewardsPanelView: {fileID: 1680203524}
+  _zoneBarView: {fileID: 104801010}
+  _bombPopupView: {fileID: 1600739664}
 --- !u!4 &822319108
 Transform:
   m_ObjectHideFlags: 0

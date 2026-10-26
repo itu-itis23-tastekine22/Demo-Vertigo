@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c20471c35d4ef432aae42fdd5ee08bc8, type: 3}
+  m_Name: Zone_Safe
+  m_EditorClassIdentifier: 
+  _interval: 5
+  _priority: 1
+  _hasBomb: 0
+  _isLeaveAllowed: 1
+  _zoneBarSprite: {fileID: 21300000, guid: e39ce31b122f74fe993fc03cf34da767, type: 3}
+  _wheelTiers:
+  - _startZone: 5
+    _wheel: {fileID: 11400000, guid: 62bd756b9182f4fc99738ece142c1cc7, type: 2}
+  - _startZone: 15
+    _wheel: {fileID: 11400000, guid: 2280b031178c04029939021296959ff1, type: 2}
